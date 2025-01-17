@@ -1,0 +1,22 @@
+{
+  "name": "pixi_with_spirte",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rsbuild build",
+    "start": "rsbuild dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@esotericsoftware/spine-pixi-v8": "^4.2.70",
+    "@rsbuild/core": "^1.1.13",
+    "pixi.js": "^8.6.6"
+  }
+}
