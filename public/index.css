@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+#stats {
+    margin: 20px 0;
+    display: flex;
+    gap: 20px;
+}
+
+.stat {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#canvas-container {
+    position: relative;
+    width: 70%;
+    height: calc(100vh - 100px); /* Adjust height for spacing */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
