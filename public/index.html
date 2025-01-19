@@ -9,38 +9,34 @@
 </head>
 
 <body>
-
-    <div>
+    <div id="container">
         <div id="controls_side_panel">
-            <div>
-                <p>Animations</p>
-            </div>
-            <div>
-                <ul>
-
-                </ul>
-            </div>
+            <h2>Animations</h2>
+            <ul id="animations-list">
+                <!-- Animation list items will be dynamically added here -->
+            </ul>
         </div>
 
-        <div id="stats">
-            <div class="stat">Draw Calls:
-                <span id="draw-calls">0</span>
+        <div id="main_content">
+            <div id="stats">
+                <div class="stat">Draw Calls:
+                    <span id="draw-calls">0</span>
+                </div>
+                <div class="stat">Vertex Count:
+                    <span id="vertex-count">0</span>
+                </div>
+                <div class="stat">Triangles:
+                    <span id="triangles">0</span>
+                </div>
             </div>
-            <div class="stat">Vertex Count:
-                <span id="vertex-count">0</span>
-            </div>
-            <div class="stat">Triangles:
-                <span id="triangles">0</span>
+
+            <div id="canvas_container">
+                <!-- Pixi canvas will be placed here -->
             </div>
         </div>
-
-        <div id="canvas_container">
-            <!-- Pixi canvas will be placed here -->
-        </div>
-
     </div>
 
-    <script src="./dist/index.js"></script>
+    <!-- <script src="."></script> -->
 </body>
 
 </html>

@@ -5,9 +5,16 @@ import { Application, Assets } from 'pixi.js';
 (async () => {
     const app = new Application();
 
-    await app.init({ background: '#1099bb', resizeTo: window });
+    const canvasContainer = document.getElementById('canvas_container')!;
+    await app.init({
+        background: '#1099bb',
+        resizeTo: canvasContainer,
+        width: 800,
+        height: 600,
+    });
 
-    document.body.appendChild(app.canvas);
+
+    canvasContainer.appendChild(app.canvas);
 
 
     const drawCallsElement = document.getElementById('draw-calls');
@@ -52,10 +59,10 @@ import { Application, Assets } from 'pixi.js';
             skeleton: "spineSkeleton",
         });
 
-
-        const animName = getAnimationNames(spine);
-        console.log("animName", animName);
-
+        const animNames = getAnimationNames(spine);
+        populateAnimationsList(animNames, (animName) => {
+            playAnimation(spine, animName);
+        });
 
         window.addEventListener("message", (event) => {
             const message = event.data;
@@ -116,4 +123,16 @@ function playAnimation(spine: Spine, animName: string) {
 
 function checkIfAnimationExists(spine: Spine, animName: string) {
     return spine.skeleton.data.animations.some(anim => anim.name === animName);
+}
+
+
+function populateAnimationsList(animNames: string[], onClick: (animName: string) => void) {
+    const list = document.getElementById('animations-list')!;
+    console.log("list", list);
+    animNames.forEach((animName) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = animName;
+        listItem.addEventListener('click', () => onClick(animName));
+        list.appendChild(listItem);
+    });
 }
