@@ -1,5 +1,5 @@
-import { Spine, RegionAttachment, NumberArrayLike } from '@esotericsoftware/spine-pixi-v8';
-import { Application, Assets, Container, Point } from 'pixi.js';
+import { Spine, RegionAttachment, NumberArrayLike, Vector2 } from '@esotericsoftware/spine-pixi-v8';
+import { Application, Assets, Container, Point, Graphics, Rectangle } from 'pixi.js';
 
 (async () => {
     const app = new Application();
@@ -13,6 +13,7 @@ import { Application, Assets, Container, Point } from 'pixi.js';
     });
 
     canvasContainer.appendChild(app.canvas);
+
 
     const drawCallsElement = document.getElementById('draw-calls');
     const vertexCountElement = document.getElementById('vertex-count')!;
@@ -95,61 +96,40 @@ import { Application, Assets, Container, Point } from 'pixi.js';
         { alias: 'spineAtlas', src: './assets_to_test/spineboy.atlas' },
         { alias: 'spineImage', src: './assets_to_test/spineboy.png' },
     ], handleOnProgress).then(() => {
-        const spine = Spine.from({
-            atlas: "spineAtlas",
-            skeleton: "spineSkeleton",
-        });
 
-        spineRenderContainer.addChild(spine);
+        spineRenderContainer.x = app.screen.width / 2;
+        spineRenderContainer.y = app.screen.height / 2;
 
-        const animNames = getAnimationNames(spine);
+        spineRenderContainer.boundsArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
+
+        const spineController = new SpineController(spineRenderContainer);
+
+        const animNames = spineController.getAnimationNames();
         populateAnimationsList(animNames, (animName) => {
-            playAnimation(spine, animName);
+            spineController.play(animName);
         });
 
-        const vertexCount = getVertsCount(spine);
+        app.ticker.add(() => {
+            spineController.drawRect();
+            // spineController.drawBoundsForAttachment();
+            spineController.drawBoundsForAttachment();
+        });
+
+
+        const vertexCount = spineController.getVertsCount();
         const triangles = vertexCount / 2;
+
 
         vertexCountElement.textContent = vertexCount.toString();
         trianglesElement.textContent = triangles.toString();
-
-        spine.x = app.screen.width / 2;
-        spine.y = app.screen.height;
     }).catch(error => {
         console.error("Failed to load assets", error);
     });
 })();
 
-function getVertsCount(spine: Spine) {
-    let count = 0;
-    spine.skeleton.slots.forEach(slot => {
-        const attachment = slot.getAttachment();
-
-        if (attachment instanceof RegionAttachment) {
-            const regionAttachment = attachment as RegionAttachment;
-            const vertCount = getVertCounFromUv(regionAttachment.uvs);
-            count += vertCount;
-        } else {
-            console.log("Unknown attachment type");
-        }
-    });
-    return count;
-}
 
 function getVertCounFromUv(uv: NumberArrayLike) {
     return uv.length / 2;
-}
-
-function getAnimationNames(spine: Spine) {
-    return spine.skeleton.data.animations.map(anim => anim.name);
-}
-
-function playAnimation(spine: Spine, animName: string) {
-    spine.state.setAnimation(0, animName, true);
-}
-
-function checkIfAnimationExists(spine: Spine, animName: string) {
-    return spine.skeleton.data.animations.some(anim => anim.name === animName);
 }
 
 function populateAnimationsList(animNames: string[], onClick: (animName: string) => void) {
@@ -164,11 +144,17 @@ function populateAnimationsList(animNames: string[], onClick: (animName: string)
 
 class SpineRenderContainer extends Container {
     private zoomLevel: number;
+    private graphics: Graphics;
+
 
     constructor() {
         super();
         const defaultZoomLevel = 1;
         this.zoomLevel = defaultZoomLevel;
+
+        this.graphics = new Graphics();
+        this.graphics.zIndex = 1000;
+        this.addChild(this.graphics);
     }
 
     handleZoom(zoomFactor: number) {
@@ -179,5 +165,120 @@ class SpineRenderContainer extends Container {
     handleMove(deltaX: number, deltaY: number) {
         this.x += deltaX;
         this.y += deltaY;
+    }
+
+
+    public drawBounds() {
+        this.graphics.clear();
+        const boundsArea = this.boundsArea;
+
+        console.log("boundsArea", boundsArea);
+
+        this.graphics
+            .rect(boundsArea.left, boundsArea.top, boundsArea.width, boundsArea.height)
+            .stroke({ color: 0x008000, pixelLine: true });
+    }
+}
+class SpineController extends Container {
+    private _spine: Spine;
+    private graphics: Graphics;
+    private _attachmentBounds: Graphics;
+    private _boundsDebugGraphics: Graphics;
+
+    constructor(parent: Container) {
+        super();
+
+        const spineParent = new Container();
+        const debugParent = new Container();
+
+        parent.addChild(spineParent);
+        parent.addChild(debugParent);
+
+        this._spine = Spine.from({
+            atlas: "spineAtlas",
+            skeleton: "spineSkeleton",
+        });
+
+        spineParent.addChild(this._spine);
+
+        this.graphics = new Graphics();
+        // this.graphics.y -= this._spine.height / 2;
+        debugParent.addChild(this.graphics);
+
+        this._attachmentBounds = new Graphics();
+        debugParent.addChild(this._attachmentBounds);
+
+        this._boundsDebugGraphics = new Graphics();
+        debugParent.addChild(this._boundsDebugGraphics);
+
+        this.boundsArea = new Rectangle(this._spine.x, this._spine.y, this._spine.width, this._spine.height);
+    }
+
+    public play(animName: string) {
+        this._spine.state.setAnimation(0, animName, true);
+    }
+
+    public getAnimationNames() {
+        return this._spine.skeleton.data.animations.map(anim => anim.name);
+    }
+
+    public drawRect() {
+        const rect = this.boundsArea;
+        this.graphics.clear();
+
+        // this.graphics
+        //     .rect(this._spine.x - this._spine.width / 2, this._spine.y - this._spine.height / 2, rect.width, rect.height)
+        //     .stroke({ color: 0x008000, pixelLine: true });
+
+        this.graphics
+            .rect(rect.x, rect.y, rect.width, rect.height)
+            .stroke({ color: 0x008000, pixelLine: true });
+
+        this.graphics.x = -this._spine.width / 2;
+        this.graphics.y = -this._spine.height;
+        // this.graphics.width = this._spine.width;
+        // this.graphics.height = this._spine.height;
+    }
+
+    public drawBoundsForAttachment() {
+        this._boundsDebugGraphics.clear();
+
+        this._spine.skeleton.slots.forEach((slot) => {
+            const attachment = slot.getAttachment();
+            if (attachment instanceof RegionAttachment) {
+                const regionAttachment = attachment as RegionAttachment;
+
+                const vertices = new Float32Array(8);
+                regionAttachment.computeWorldVertices(slot, vertices, 0, 2);
+
+                this._boundsDebugGraphics.stroke({
+                    color: 0x0000ff,
+                    width: 1,
+                });
+
+                this._boundsDebugGraphics.moveTo(vertices[0], vertices[1]);
+                for (let i = 2; i < vertices.length; i += 2) {
+                    this._boundsDebugGraphics.lineTo(vertices[i], vertices[i + 1]);
+                }
+                this._boundsDebugGraphics.closePath();
+            }
+        });
+    }
+
+
+    public getVertsCount() {
+        let count = 0;
+        this._spine.skeleton.slots.forEach(slot => {
+            const attachment = slot.getAttachment();
+
+            if (attachment instanceof RegionAttachment) {
+                const regionAttachment = attachment as RegionAttachment;
+                const vertCount = getVertCounFromUv(regionAttachment.uvs);
+                count += vertCount;
+            } else {
+                console.log("Unknown attachment type");
+            }
+        });
+        return count;
     }
 }
