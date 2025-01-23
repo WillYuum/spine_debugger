@@ -1,10 +1,15 @@
 import { Spine, RegionAttachment, NumberArrayLike, Vector2 } from '@esotericsoftware/spine-pixi-v8';
 import { Application, Assets, Container, Point, Graphics, Rectangle } from 'pixi.js';
+import { EnableDragAndDrop } from "./DragAndDrop";
+
+
+
 
 (async () => {
     const app = new Application();
 
-    const canvasContainer = document.getElementById('canvas_container')!;
+
+    const canvasContainer = document.getElementById('canvas_editor')!;
     await app.init({
         background: '#1099bb',
         resizeTo: canvasContainer,
@@ -12,119 +17,143 @@ import { Application, Assets, Container, Point, Graphics, Rectangle } from 'pixi
         height: 600,
     });
 
-    canvasContainer.appendChild(app.canvas);
 
-
-    const drawCallsElement = document.getElementById('draw-calls');
-    const vertexCountElement = document.getElementById('vertex-count')!;
-    const trianglesElement = document.getElementById('triangles')!;
-
-    let drawCount = 0;
-
-    const renderer = app.renderer as any;
-    const drawElements = renderer.gl.drawElements;
-    renderer.gl.drawElements = (...args: any[]) => {
-        drawElements.call(renderer.gl, ...args);
-        drawCount++;
-    };
-
-    app.ticker.add(() => {
-        if (drawCallsElement) {
-            drawCallsElement.textContent = drawCount.toString();
-        }
-        drawCount = 0;
-    });
-
-    const handleOnProgress = (v: any) => {
-        console.log('progress', v);
-    };
-
-    const spineRenderContainer = new SpineRenderContainer();
-    app.stage.addChild(spineRenderContainer);
-
-    let isDragging = false;
-    let dragStart = new Point();
-
-    canvasContainer.addEventListener('wheel', (event) => {
-        event.preventDefault();
-        const zoomFactor = 1.1; // Adjust this factor for faster/slower zooming
-        if (event.deltaY < 0) {
-            spineRenderContainer.handleZoom(zoomFactor);
-        } else {
-            spineRenderContainer.handleZoom(1 / zoomFactor);
-        }
-    });
-
-    canvasContainer.addEventListener('mousedown', (event) => {
-        const leftMouseButton = 0;
-        if (event.button === leftMouseButton) {
-            isDragging = true;
-            const rect = canvasContainer.getBoundingClientRect();
-            dragStart.set(event.clientX - rect.left, event.clientY - rect.top);
-        }
-    });
-
-
-    canvasContainer.addEventListener('mousemove', (event) => {
-        if (isDragging) {
-            const rect = canvasContainer.getBoundingClientRect();
-            const currentMousePosition = new Point(
-                event.clientX - rect.left,
-                event.clientY - rect.top
-            );
-
-            const deltaX = currentMousePosition.x - dragStart.x;
-            const deltaY = currentMousePosition.y - dragStart.y;
-
-            spineRenderContainer.handleMove(deltaX, deltaY);
-            dragStart = currentMousePosition;
-        }
-    });
-
-    canvasContainer.addEventListener('mouseup', (event) => {
-        if (event.button === 0) {
-            isDragging = false;
-        }
-    });
-
-    canvasContainer.addEventListener('mouseleave', () => {
-        isDragging = false;
-    });
-
-    Assets.load([
-        { alias: 'spineSkeleton', src: './assets_to_test/spineboy-ess.json' },
-        { alias: 'spineAtlas', src: './assets_to_test/spineboy.atlas' },
-        { alias: 'spineImage', src: './assets_to_test/spineboy.png' },
-    ], handleOnProgress).then(() => {
-
-        spineRenderContainer.x = app.screen.width / 2;
-        spineRenderContainer.y = app.screen.height / 2;
-
-        spineRenderContainer.boundsArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
-
-        const spineController = new SpineController(spineRenderContainer);
-
-        const animNames = spineController.getAnimationNames();
-        populateAnimationsList(animNames, (animName) => {
-            spineController.play(animName);
+    EnableDragAndDrop(canvasContainer, (jsonFile, atlasFile, pngFile) => {
+        console.log("Files detected:", {
+            json: jsonFile.name,
+            atlas: atlasFile.name,
+            png: pngFile.name
         });
+
+        canvasContainer.appendChild(app.canvas);
+
+
+        // app.canvas.toDataURL('')
+
+        const drawCallsElement = document.getElementById('draw-calls');
+        const vertexCountElement = document.getElementById('vertex-count')!;
+        const trianglesElement = document.getElementById('triangles')!;
+
+        let drawCount = 0;
+
+        const renderer = app.renderer as any;
+        const drawElements = renderer.gl.drawElements;
+        renderer.gl.drawElements = (...args: any[]) => {
+            drawElements.call(renderer.gl, ...args);
+            drawCount++;
+        };
 
         app.ticker.add(() => {
-            spineController.drawRect();
-            // spineController.drawBoundsForAttachment();
-            spineController.drawBoundsForAttachment();
+            if (drawCallsElement) {
+                drawCallsElement.textContent = drawCount.toString();
+            }
+            drawCount = 0;
+        });
+
+        const handleOnProgress = (v: any) => {
+            console.log('progress', v);
+        };
+
+        const spineRenderContainer = new SpineRenderContainer();
+        app.stage.addChild(spineRenderContainer);
+
+        let isDragging = false;
+        let dragStart = new Point();
+
+        canvasContainer.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const zoomFactor = 1.1; // Adjust this factor for faster/slower zooming
+            if (event.deltaY < 0) {
+                spineRenderContainer.handleZoom(zoomFactor);
+            } else {
+                spineRenderContainer.handleZoom(1 / zoomFactor);
+            }
+        });
+
+        canvasContainer.addEventListener('mousedown', (event) => {
+            const leftMouseButton = 0;
+            if (event.button === leftMouseButton) {
+                isDragging = true;
+                const rect = canvasContainer.getBoundingClientRect();
+                dragStart.set(event.clientX - rect.left, event.clientY - rect.top);
+            }
         });
 
 
-        const vertexCount = spineController.getVertsCount();
-        const triangles = vertexCount / 2;
+        canvasContainer.addEventListener('mousemove', (event) => {
+            if (isDragging) {
+                const rect = canvasContainer.getBoundingClientRect();
+                const currentMousePosition = new Point(
+                    event.clientX - rect.left,
+                    event.clientY - rect.top
+                );
+
+                const deltaX = currentMousePosition.x - dragStart.x;
+                const deltaY = currentMousePosition.y - dragStart.y;
+
+                spineRenderContainer.handleMove(deltaX, deltaY);
+                dragStart = currentMousePosition;
+            }
+        });
+
+        canvasContainer.addEventListener('mouseup', (event) => {
+            if (event.button === 0) {
+                isDragging = false;
+            }
+        });
+
+        canvasContainer.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        console.log("Loading assets...");
+        console.log("jsonFile", jsonFile.webkitRelativePath);
+        console.log("atlasFile", atlasFile.webkitRelativePath);
+        console.log("pngFile", pngFile.webkitRelativePath);
+
+        // Assets.loader.load(pngFile.).then(() => {
+        //     console.log("Image loaded   ", pngFile.name);
+        // });
+
+        Assets.load([
+            { alias: 'spineSkeleton', src: './assets_to_test/spineboy-ess.json' },
+            { alias: 'spineAtlas', src: './assets_to_test/spineboy.atlas' },
+            { alias: 'spineImage', src: './assets_to_test/spineboy.png' },
+            // { alias: 'spineSkeleton', src: jsonFile.name },
+            // { alias: 'spineAtlas', src: atlasFile.name },
+            // { alias: 'spineImage', src: pngFile.name },
+        ], handleOnProgress).then(() => {
+
+            spineRenderContainer.x = app.screen.width / 2;
+            spineRenderContainer.y = app.screen.height / 2;
+
+            spineRenderContainer.boundsArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
+
+            const spineController = new SpineController(spineRenderContainer);
+
+            const animNames = spineController.getAnimationNames();
+            populateAnimationsList(animNames, (animName) => {
+                spineController.play(animName);
+            });
+
+            app.ticker.add(() => {
+                spineController.drawRect();
+                // spineController.drawBoundsForAttachment();
+                spineController.drawBoundsForAttachment();
+            });
 
 
-        vertexCountElement.textContent = vertexCount.toString();
-        trianglesElement.textContent = triangles.toString();
-    }).catch(error => {
-        console.error("Failed to load assets", error);
+            const vertexCount = spineController.getVertsCount();
+            const triangles = vertexCount / 2;
+
+
+            vertexCountElement.textContent = vertexCount.toString();
+            trianglesElement.textContent = triangles.toString();
+        }).catch(error => {
+            console.error("Failed to load assets", error);
+        });
     });
+
 })();
 
 
@@ -282,3 +311,24 @@ class SpineController extends Container {
         return count;
     }
 }
+
+
+// //Add function to create a directory from the file
+// function createDirectory(file: File) {
+//     const reader = new FileReader();
+//     reader.onload = (e) => {
+//         const arrayBuffer = reader.result as ArrayBuffer;
+//         const uint8Array = new Uint8Array(arrayBuffer);
+//         const blob = new Blob([uint8Array], { type: 'application/octet-stream' });
+//         const url = URL.createObjectURL(blob);
+//         const a = document.createElement('a');
+//         a.href = url;
+//         a.download = file.name;
+//         a.click();
+//         URL.revokeObjectURL(url);
+//     };
+//     reader.readAsArrayBuffer(file);
+
+//     reader.pa
+//     return reader;
+// }\
