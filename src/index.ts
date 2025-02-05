@@ -1,14 +1,22 @@
-import { Spine, RegionAttachment, NumberArrayLike, Vector2 } from '@esotericsoftware/spine-pixi-v8';
-import { Application, Assets, Container, Point, Graphics, Rectangle } from 'pixi.js';
+import { NumberArrayLike, RegionAttachment, Spine, TextureAtlas } from '@esotericsoftware/spine-pixi-v8';
+import { Application, Assets, Container, Graphics, Point, Rectangle } from 'pixi.js';
 import { EnableDragAndDrop } from "./DragAndDrop";
 
 
-
+// Helper function to convert File to Base64 string
+function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            resolve(reader.result as string);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
 (async () => {
     const app = new Application();
-
-
     const canvasContainer = document.getElementById('canvas_editor')!;
     await app.init({
         background: '#1099bb',
@@ -17,8 +25,7 @@ import { EnableDragAndDrop } from "./DragAndDrop";
         height: 600,
     });
 
-
-    EnableDragAndDrop(canvasContainer, (jsonFile, atlasFile, pngFile) => {
+    EnableDragAndDrop(canvasContainer, async (jsonFile, atlasFile, pngFile) => {
         console.log("Files detected:", {
             json: jsonFile.name,
             atlas: atlasFile.name,
@@ -27,15 +34,11 @@ import { EnableDragAndDrop } from "./DragAndDrop";
 
         canvasContainer.appendChild(app.canvas);
 
-
-        // app.canvas.toDataURL('')
-
         const drawCallsElement = document.getElementById('draw-calls');
         const vertexCountElement = document.getElementById('vertex-count')!;
         const trianglesElement = document.getElementById('triangles')!;
 
         let drawCount = 0;
-
         const renderer = app.renderer as any;
         const drawElements = renderer.gl.drawElements;
         renderer.gl.drawElements = (...args: any[]) => {
@@ -79,7 +82,6 @@ import { EnableDragAndDrop } from "./DragAndDrop";
             }
         });
 
-
         canvasContainer.addEventListener('mousemove', (event) => {
             if (isDragging) {
                 const rect = canvasContainer.getBoundingClientRect();
@@ -107,22 +109,50 @@ import { EnableDragAndDrop } from "./DragAndDrop";
         });
 
         console.log("Loading assets...");
-        console.log("jsonFile", jsonFile.webkitRelativePath);
-        console.log("atlasFile", atlasFile.webkitRelativePath);
-        console.log("pngFile", pngFile.webkitRelativePath);
 
-        // Assets.loader.load(pngFile.).then(() => {
-        //     console.log("Image loaded   ", pngFile.name);
-        // });
+        // Convert the files to Base64
+        // const jsonBase64 = await fileToBase64(jsonFile);
+        // const atlasBase64 = (await fileToBase64(atlasFile));
+        // const atlasBase64 = (await fileToBase64(atlasFile)).replace('application/octet-stream', 'plain/text');
+
+        const textureAtlas = await new TextureAtlas(await atlasFile.text());
+
+        const atlasText = await atlasFile.text();
+
+        const jsonATlas = JSON.stringify(atlasText);
+
+        let file = new Blob([jsonATlas], { type: 'application/pdf' });
+        const atlasURL = URL.createObjectURL(file)
+        // const y = new AtlasAttachmentLoader(textureAtlas)
+
+        const imageURL = URL.createObjectURL(pngFile);
+
+
+        const jsonURL = URL.createObjectURL(jsonFile);
 
         Assets.load([
-            { alias: 'spineSkeleton', src: './assets_to_test/spineboy-ess.json' },
-            { alias: 'spineAtlas', src: './assets_to_test/spineboy.atlas' },
-            { alias: 'spineImage', src: './assets_to_test/spineboy.png' },
-            // { alias: 'spineSkeleton', src: jsonFile.name },
-            // { alias: 'spineAtlas', src: atlasFile.name },
-            // { alias: 'spineImage', src: pngFile.name },
-        ], handleOnProgress).then(() => {
+            {
+                alias: 'spineAtlas',
+                src: `${atlasURL}`,
+                format: 'atlas',
+                data: textureAtlas,
+            },
+            {
+                alias: 'spineSkeleton',
+                src: `${jsonURL}`,
+                format: 'json',
+                loadParser: 'loadJson'
+            },
+            {
+                alias: 'spineImage',
+                src: `${imageURL}`,
+                format: 'png',
+                loadParser: 'loadTextures',
+            },
+        ], handleOnProgress).then((v) => {
+
+            console.log('v', v);
+
 
             spineRenderContainer.x = app.screen.width / 2;
             spineRenderContainer.y = app.screen.height / 2;
@@ -142,10 +172,8 @@ import { EnableDragAndDrop } from "./DragAndDrop";
                 spineController.drawBoundsForAttachment();
             });
 
-
             const vertexCount = spineController.getVertsCount();
             const triangles = vertexCount / 2;
-
 
             vertexCountElement.textContent = vertexCount.toString();
             trianglesElement.textContent = triangles.toString();
@@ -155,7 +183,6 @@ import { EnableDragAndDrop } from "./DragAndDrop";
     });
 
 })();
-
 
 function getVertCounFromUv(uv: NumberArrayLike) {
     return uv.length / 2;
@@ -174,7 +201,6 @@ function populateAnimationsList(animNames: string[], onClick: (animName: string)
 class SpineRenderContainer extends Container {
     private zoomLevel: number;
     private graphics: Graphics;
-
 
     constructor() {
         super();
@@ -196,7 +222,6 @@ class SpineRenderContainer extends Container {
         this.y += deltaY;
     }
 
-
     public drawBounds() {
         this.graphics.clear();
         const boundsArea = this.boundsArea;
@@ -208,6 +233,7 @@ class SpineRenderContainer extends Container {
             .stroke({ color: 0x008000, pixelLine: true });
     }
 }
+
 class SpineController extends Container {
     private _spine: Spine;
     private graphics: Graphics;
@@ -231,7 +257,6 @@ class SpineController extends Container {
         spineParent.addChild(this._spine);
 
         this.graphics = new Graphics();
-        // this.graphics.y -= this._spine.height / 2;
         debugParent.addChild(this.graphics);
 
         this._attachmentBounds = new Graphics();
@@ -255,18 +280,12 @@ class SpineController extends Container {
         const rect = this.boundsArea;
         this.graphics.clear();
 
-        // this.graphics
-        //     .rect(this._spine.x - this._spine.width / 2, this._spine.y - this._spine.height / 2, rect.width, rect.height)
-        //     .stroke({ color: 0x008000, pixelLine: true });
-
         this.graphics
             .rect(rect.x, rect.y, rect.width, rect.height)
             .stroke({ color: 0x008000, pixelLine: true });
 
         this.graphics.x = -this._spine.width / 2;
         this.graphics.y = -this._spine.height;
-        // this.graphics.width = this._spine.width;
-        // this.graphics.height = this._spine.height;
     }
 
     public drawBoundsForAttachment() {
@@ -294,7 +313,6 @@ class SpineController extends Container {
         });
     }
 
-
     public getVertsCount() {
         let count = 0;
         this._spine.skeleton.slots.forEach(slot => {
@@ -311,24 +329,3 @@ class SpineController extends Container {
         return count;
     }
 }
-
-
-// //Add function to create a directory from the file
-// function createDirectory(file: File) {
-//     const reader = new FileReader();
-//     reader.onload = (e) => {
-//         const arrayBuffer = reader.result as ArrayBuffer;
-//         const uint8Array = new Uint8Array(arrayBuffer);
-//         const blob = new Blob([uint8Array], { type: 'application/octet-stream' });
-//         const url = URL.createObjectURL(blob);
-//         const a = document.createElement('a');
-//         a.href = url;
-//         a.download = file.name;
-//         a.click();
-//         URL.revokeObjectURL(url);
-//     };
-//     reader.readAsArrayBuffer(file);
-
-//     reader.pa
-//     return reader;
-// }\
