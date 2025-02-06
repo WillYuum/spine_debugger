@@ -1,4 +1,4 @@
-import { NumberArrayLike, RegionAttachment, Spine, TextureAtlas } from '@esotericsoftware/spine-pixi-v8';
+import { NumberArrayLike, RegionAttachment, Spine, TextureAtlas, SkeletonJson, AtlasAttachmentLoader, SkeletonData } from '@esotericsoftware/spine-pixi-v8';
 import { Application, Assets, Container, Graphics, Point, Rectangle } from 'pixi.js';
 import { EnableDragAndDrop } from "./DragAndDrop";
 
@@ -136,6 +136,7 @@ function fileToBase64(file: File): Promise<string> {
                 src: `${atlasURL}`,
                 format: 'atlas',
                 data: textureAtlas,
+                loadParser: 'loadTxt',
             },
             {
                 alias: 'spineSkeleton',
@@ -154,12 +155,15 @@ function fileToBase64(file: File): Promise<string> {
             console.log('v', v);
 
 
+            const spineData = new SkeletonJson(new AtlasAttachmentLoader(textureAtlas)).readSkeletonData(v.spineSkeleton);
+
+
             spineRenderContainer.x = app.screen.width / 2;
             spineRenderContainer.y = app.screen.height / 2;
 
             spineRenderContainer.boundsArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
 
-            const spineController = new SpineController(spineRenderContainer);
+            const spineController = new SpineController(spineRenderContainer, spineData);
 
             const animNames = spineController.getAnimationNames();
             populateAnimationsList(animNames, (animName) => {
@@ -240,7 +244,7 @@ class SpineController extends Container {
     private _attachmentBounds: Graphics;
     private _boundsDebugGraphics: Graphics;
 
-    constructor(parent: Container) {
+    constructor(parent: Container, skeletonData: SkeletonData) {
         super();
 
         const spineParent = new Container();
@@ -249,10 +253,13 @@ class SpineController extends Container {
         parent.addChild(spineParent);
         parent.addChild(debugParent);
 
-        this._spine = Spine.from({
-            atlas: "spineAtlas",
-            skeleton: "spineSkeleton",
-        });
+
+        // this._spine = Spine.from({
+        //     atlas: "spineAtlas",
+        //     skeleton: "spineSkeleton",
+        // });
+
+        this._spine = new Spine(skeletonData);
 
         spineParent.addChild(this._spine);
 
@@ -265,7 +272,7 @@ class SpineController extends Container {
         this._boundsDebugGraphics = new Graphics();
         debugParent.addChild(this._boundsDebugGraphics);
 
-        this.boundsArea = new Rectangle(this._spine.x, this._spine.y, this._spine.width, this._spine.height);
+        // this.boundsArea = new Rectangle(this._spine.x, this._spine.y, this._spine.width, this._spine.height);
     }
 
     public play(animName: string) {
@@ -277,15 +284,15 @@ class SpineController extends Container {
     }
 
     public drawRect() {
-        const rect = this.boundsArea;
-        this.graphics.clear();
+        // const rect = this.boundsArea;
+        // this.graphics.clear();
 
-        this.graphics
-            .rect(rect.x, rect.y, rect.width, rect.height)
-            .stroke({ color: 0x008000, pixelLine: true });
+        // this.graphics
+        //     .rect(rect.x, rect.y, rect.width, rect.height)
+        //     .stroke({ color: 0x008000, pixelLine: true });
 
-        this.graphics.x = -this._spine.width / 2;
-        this.graphics.y = -this._spine.height;
+        // this.graphics.x = -this._spine.width / 2;
+        // this.graphics.y = -this._spine.height;
     }
 
     public drawBoundsForAttachment() {

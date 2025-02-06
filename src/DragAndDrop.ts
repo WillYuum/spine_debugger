@@ -95,6 +95,7 @@ export function EnableDragAndDrop(editorElement: HTMLElement, cb: SpineFileProce
             });
 
             document.getElementById('drop_message')?.remove();
+            document.getElementById('dropzone')?.classList.add('dropped');
 
             const uploadFilePromise = uploadFiles(jsonFile, atlasFile, pngFile);
 
