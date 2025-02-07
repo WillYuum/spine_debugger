@@ -10,7 +10,7 @@ function createPlayButton() {
     let isPlaying = false;
 
     const updateButtonText = () => {
-        playButton.textContent = isPlaying ? "Pause" : "Play";
+        playButton.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
     };
 
     const listeners: ((isPlaying: boolean) => void)[] = [];
