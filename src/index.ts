@@ -1,19 +1,7 @@
-import { NumberArrayLike, RegionAttachment, Spine, TextureAtlas } from '@esotericsoftware/spine-pixi-v8';
+import { NumberArrayLike, RegionAttachment, Spine, SpineTexture, TextureAtlas } from '@esotericsoftware/spine-pixi-v8';
 import { Application, Assets, Container, Graphics, Point, Rectangle } from 'pixi.js';
 import { EnableDragAndDrop } from "./DragAndDrop";
-
-
-// Helper function to convert File to Base64 string
-function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            resolve(reader.result as string);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+import { SpineLoader } from './SpineLoader';
 
 (async () => {
     const app = new Application();
@@ -26,12 +14,6 @@ function fileToBase64(file: File): Promise<string> {
     });
 
     EnableDragAndDrop(canvasContainer, async (jsonFile, atlasFile, pngFile) => {
-        console.log("Files detected:", {
-            json: jsonFile.name,
-            atlas: atlasFile.name,
-            png: pngFile.name
-        });
-
         canvasContainer.appendChild(app.canvas);
 
         const drawCallsElement = document.getElementById('draw-calls');
@@ -108,51 +90,23 @@ function fileToBase64(file: File): Promise<string> {
             isDragging = false;
         });
 
-        console.log("Loading assets...");
+        const spineLoader = new SpineLoader();
+        const onLoadSpines = spineLoader.loadSpineAssets({
+            atlasFile: atlasFile,
+            jsonFile: jsonFile,
+            pngFile: pngFile,
+        });
 
-        // Convert the files to Base64
-        // const jsonBase64 = await fileToBase64(jsonFile);
-        // const atlasBase64 = (await fileToBase64(atlasFile));
-        // const atlasBase64 = (await fileToBase64(atlasFile)).replace('application/octet-stream', 'plain/text');
+        onLoadSpines.then((v) => {
+            const { spineAtlas, spineImage } = v;
 
-        const textureAtlas = await new TextureAtlas(await atlasFile.text());
+            const textureAtlas = new TextureAtlas(spineAtlas);
+            Assets.cache.set('atlas', textureAtlas);
 
-        const atlasText = await atlasFile.text();
-
-        const jsonATlas = JSON.stringify(atlasText);
-
-        let file = new Blob([jsonATlas], { type: 'application/pdf' });
-        const atlasURL = URL.createObjectURL(file)
-        // const y = new AtlasAttachmentLoader(textureAtlas)
-
-        const imageURL = URL.createObjectURL(pngFile);
-
-
-        const jsonURL = URL.createObjectURL(jsonFile);
-
-        Assets.load([
-            {
-                alias: 'spineAtlas',
-                src: `${atlasURL}`,
-                format: 'atlas',
-                data: textureAtlas,
-            },
-            {
-                alias: 'spineSkeleton',
-                src: `${jsonURL}`,
-                format: 'json',
-                loadParser: 'loadJson'
-            },
-            {
-                alias: 'spineImage',
-                src: `${imageURL}`,
-                format: 'png',
-                loadParser: 'loadTextures',
-            },
-        ], handleOnProgress).then((v) => {
-
-            console.log('v', v);
-
+            for (const page of textureAtlas.pages) {
+                const sprite = Assets.get('spineImage');
+                page.setTexture(SpineTexture.from(sprite.source));
+            }
 
             spineRenderContainer.x = app.screen.width / 2;
             spineRenderContainer.y = app.screen.height / 2;
@@ -250,7 +204,7 @@ class SpineController extends Container {
         parent.addChild(debugParent);
 
         this._spine = Spine.from({
-            atlas: "spineAtlas",
+            atlas: "atlas",
             skeleton: "spineSkeleton",
         });
 
