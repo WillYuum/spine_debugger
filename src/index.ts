@@ -3,6 +3,48 @@ import { Application, Assets, Container, Graphics, Point, Rectangle } from 'pixi
 import { EnableDragAndDrop } from "./DragAndDrop";
 import { SpineLoader } from './SpineLoader';
 
+const playButton = createPlayButton();
+
+function createPlayButton() {
+    const playButton = document.getElementById('play-button')!;
+    let isPlaying = false;
+
+    const updateButtonText = () => {
+        playButton.textContent = isPlaying ? "Pause" : "Play";
+    };
+
+    const listeners: ((isPlaying: boolean) => void)[] = [];
+
+    const onChange = (callback: (isPlaying: boolean) => void) => {
+        listeners.push(callback);
+    };
+
+    const notifyListeners = () => {
+        listeners.forEach(callback => callback(isPlaying));
+    };
+
+    const onClick = () => {
+        isPlaying = !isPlaying;
+        updateButtonText();
+        notifyListeners();
+    };
+
+    playButton.addEventListener('click', onClick);
+
+    const forceChange = (value: boolean) => {
+        isPlaying = value;
+        updateButtonText();
+        notifyListeners();
+    };
+
+    return {
+        get isPlaying() { return isPlaying; },
+        forceChange,
+        onChange
+    };
+}
+
+
 (async () => {
     const app = new Application();
     const canvasContainer = document.getElementById('canvas_editor')!;
@@ -118,6 +160,7 @@ import { SpineLoader } from './SpineLoader';
             const animNames = spineController.getAnimationNames();
             populateAnimationsList(animNames, (animName) => {
                 spineController.play(animName);
+                playButton.forceChange(true);
             });
 
             app.ticker.add(() => {
@@ -220,6 +263,15 @@ class SpineController extends Container {
         debugParent.addChild(this._boundsDebugGraphics);
 
         this.boundsArea = new Rectangle(this._spine.x, this._spine.y, this._spine.width, this._spine.height);
+
+
+        playButton.onChange((isPlaying) => {
+            if (isPlaying) {
+                this._spine.state.timeScale = 1;
+            } else {
+                this._spine.state.timeScale = 0;
+            }
+        });
     }
 
     public play(animName: string) {
