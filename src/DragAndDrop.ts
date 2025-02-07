@@ -10,7 +10,7 @@ const ON_DRAG_LEAVE_COLOR = 'red';
 
 
 export function EnableDragAndDrop(editorElement: HTMLElement, cb: SpineFileProcessor) {
-    const dropzone = new Dropzone(".droppable_zone", { url: "/", });
+    const dropzone = new Dropzone(".droppable_zone", { url: "/", previewsContainer: false, });
 
     // dropzone.on("dragover", function (v) {
     //     console.log('dragover', v);
@@ -19,7 +19,6 @@ export function EnableDragAndDrop(editorElement: HTMLElement, cb: SpineFileProce
     // dropzone.on("drop", function (v: DragEvent) {
     //     console.log('drop', v);
     // });
-
 
     // Prevent default drag behaviors
     ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
@@ -72,6 +71,14 @@ export function EnableDragAndDrop(editorElement: HTMLElement, cb: SpineFileProce
         // if (!event.dataTransfer) return;
         // console.log('AAAAA', event);
 
+
+        const classesToRemove = [
+            'draggableArea',
+            '.droppable_zone',
+        ];
+
+        classesToRemove.forEach((className) => editorElement.classList.remove(className));
+
         const files = Array.from(event);
         const jsonFile = files.find(file => file.name.endsWith(".json"));
         const atlasFile = files.find(file => file.name.endsWith(".atlas"));
@@ -98,8 +105,8 @@ export function EnableDragAndDrop(editorElement: HTMLElement, cb: SpineFileProce
 
             const uploadFilePromise = uploadFiles(jsonFile, atlasFile, pngFile);
 
-
             uploadFilePromise.then(() => {
+                dropzone.destroy();
                 cb(jsonFile, atlasFile, pngFile);
             }).catch((error) => {
                 console.error('Error during file upload:', error);
