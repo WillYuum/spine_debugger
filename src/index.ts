@@ -223,7 +223,13 @@ class SpineController extends Container {
     }
 
     public play(animName: string) {
-        this._spine.state.setAnimation(0, animName, true);
+        const trackEntry = this._spine.state.setAnimation(0, animName, true);
+
+        // const timeline = document.getElementById("timeline").ele;
+        // const duration = this._spine.state.trackEntry(trackEntry, ); // Get animation duration
+        // if (timeline != null) {
+        // timeline.max = dtrackEntry.duration * 100;
+        // }
     }
 
     public getAnimationNames() {
