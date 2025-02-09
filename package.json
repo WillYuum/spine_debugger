@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rsbuild build",
+    "build:prod": "rspack build",
     "start": "rsbuild dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,13 +13,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rsbuild/core": "^1.1.13",
+    "@rspack/cli": "^1.2.2",
     "@types/dropzone": "^5.7.9",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.2",
     "typescript": "^5.7.3"
   },
   "dependencies": {
     "@esotericsoftware/spine-pixi-v8": "^4.2.70",
-    "@rsbuild/core": "^1.1.13",
-    "dropzone": "^6.0.0-beta.2",
+    "@rspack/core": "^1.2.2",
+    "dropzone": "6.0.0-beta.2",
     "pixi.js": "^8.6.6"
   }
 }
