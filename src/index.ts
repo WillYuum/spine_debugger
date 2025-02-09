@@ -52,7 +52,11 @@ function createTimelineTracker() {
     const currentTime = document.getElementById('current-time')!;
     const totalTime = document.getElementById('total-duration')!;
     timeline.addEventListener('input', (event) => {
-        console.log("timeline", event);
+        if (event.target) {
+            timeline.value = (event.target as HTMLInputElement).value;
+        }
+
+        listeners.forEach(listener => listener(parseFloat(timeline.value)));
     });
 
 
@@ -75,13 +79,13 @@ function createTimelineTracker() {
         timeline.value = value.toString();
     }
 
-    const actionsOnChange = (callback: (value: number) => void) => {
+    const onChange = (callback: (value: number) => void) => {
         listeners.push(callback);
     }
 
 
     return {
-        actionsOnChange,
+        onChange,
         setNewAnimation,
         updateTimeline,
     }
@@ -118,10 +122,6 @@ function createTimelineTracker() {
             }
             drawCount = 0;
         });
-
-        const handleOnProgress = (v: any) => {
-            console.log('progress', v);
-        };
 
         const spineRenderContainer = new SpineRenderContainer();
         app.stage.addChild(spineRenderContainer);
@@ -315,11 +315,31 @@ class SpineController extends Container {
             }
         });
 
+        timelineTracker.onChange((value) => {
+            const currentAnim = this._spine.state.getCurrent(0)
+            if (currentAnim) {
+                currentAnim.trackTime = value;
+                this._spine.state.update(0.016);
+            }
+
+            if (playButton.isPlaying) {
+                playButton.forceChange(false);
+
+                this._spine.state.timeScale = 0;
+            }
+        });
+
 
         Ticker.shared.add((v) => this.onUpdate(v), this);
     }
 
     onUpdate(ticker?: Ticker): void {
+        const isPlaying = playButton.isPlaying;
+
+        if (isPlaying == false) {
+            return;
+        }
+
         const currentEntry = this._spine.state.getCurrent(0);
         if (currentEntry) {
             const currentTime = currentEntry.getAnimationTime();
