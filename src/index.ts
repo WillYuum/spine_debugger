@@ -1,9 +1,11 @@
 import { NumberArrayLike, RegionAttachment, Spine, SpineTexture, TextureAtlas } from '@esotericsoftware/spine-pixi-v8';
-import { Application, Assets, Container, Graphics, Point, Rectangle } from 'pixi.js';
+import { Application, Assets, Container, Graphics, ObservablePoint, Point, Rectangle, Ticker, TickerCallback } from 'pixi.js';
 import { EnableDragAndDrop } from "./DragAndDrop";
 import { SpineLoader } from './SpineLoader';
 
 const playButton = createPlayButton();
+
+const timelineTracker = createTimelineTracker();
 
 function createPlayButton() {
     const playButton = document.getElementById('play-button')!;
@@ -44,6 +46,46 @@ function createPlayButton() {
     };
 }
 
+
+function createTimelineTracker() {
+    const timeline = document.getElementById('timeline')! as HTMLInputElement;
+    const currentTime = document.getElementById('current-time')!;
+    const totalTime = document.getElementById('total-duration')!;
+    timeline.addEventListener('input', (event) => {
+        console.log("timeline", event);
+    });
+
+
+    const listeners: ((value: number) => void)[] = [];
+
+
+    const setNewAnimation = (step: number, max: number) => {
+        timeline.max = max.toString();
+        timeline.value = '0';
+        totalTime.textContent = max.toString();
+        currentTime.textContent = step.toString();
+
+
+        const systemFPS = Ticker.shared.FPS;
+        const animDuration = max / systemFPS;
+        timeline.step = animDuration.toString();
+    }
+
+    const updateTimeline = (value: number) => {
+        timeline.value = value.toString();
+    }
+
+    const actionsOnChange = (callback: (value: number) => void) => {
+        listeners.push(callback);
+    }
+
+
+    return {
+        actionsOnChange,
+        setNewAnimation,
+        updateTimeline,
+    }
+}
 
 (async () => {
     const app = new Application();
@@ -272,16 +314,26 @@ class SpineController extends Container {
                 this._spine.state.timeScale = 0;
             }
         });
+
+
+        Ticker.shared.add((v) => this.onUpdate(v), this);
+    }
+
+    onUpdate(ticker?: Ticker): void {
+        const currentEntry = this._spine.state.getCurrent(0);
+        if (currentEntry) {
+            const currentTime = currentEntry.getAnimationTime();
+            timelineTracker.updateTimeline(currentTime);
+        }
+
     }
 
     public play(animName: string) {
         const trackEntry = this._spine.state.setAnimation(0, animName, true);
 
-        // const timeline = document.getElementById("timeline").ele;
-        // const duration = this._spine.state.trackEntry(trackEntry, ); // Get animation duration
-        // if (timeline != null) {
-        // timeline.max = dtrackEntry.duration * 100;
-        // }
+        const duration = trackEntry.animationEnd - trackEntry.animationStart;
+        timelineTracker.setNewAnimation(0, duration);
+        timelineTracker.updateTimeline(0);
     }
 
     public getAnimationNames() {

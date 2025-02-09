@@ -179,3 +179,11 @@ body {
 #timeline::-moz-range-thumb:hover {
     background: #0d7d99;
 }
+
+
+#timeline-controls{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
