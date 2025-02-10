@@ -1,11 +1,16 @@
 const path = require('node:path');
 
-module.exports = {
+export default {
     html: {
         template: './public/index.html',
     },
     entry: './src/index.ts',
-    outdir: './dist',
+    output: {
+        distPath: {
+            root: 'builds/dev',
+            js: 'resource/js',
+        },
+    },
     target: 'web',
     sourcemap: true,
     loader: {
