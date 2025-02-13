@@ -1,6 +1,7 @@
 import { NumberArrayLike, RegionAttachment, Spine, SpineTexture, TextureAtlas } from '@esotericsoftware/spine-pixi-v8';
-import { Application, Assets, Container, Graphics, ObservablePoint, Point, Rectangle, Ticker, TickerCallback } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Point, Rectangle, Ticker } from 'pixi.js';
 import { EnableDragAndDrop } from "./DragAndDrop";
+import { EnableLoadDefaultSpineButton } from './LoadDefaultAsset';
 import { SpineLoader } from './SpineLoader';
 
 const playButton = createPlayButton();
@@ -39,10 +40,15 @@ function createPlayButton() {
         notifyListeners();
     };
 
+    const clearListeners = () => {
+        listeners.length = 0;
+    }
+
     return {
         get isPlaying() { return isPlaying; },
         forceChange,
-        onChange
+        onChange,
+        clearListeners,
     };
 }
 
@@ -83,8 +89,13 @@ function createTimelineTracker() {
         listeners.push(callback);
     }
 
+    const clearListeners = () => {
+        listeners.length = 0;
+    }
+
 
     return {
+        clearListeners,
         onChange,
         setNewAnimation,
         updateTimeline,
@@ -97,31 +108,37 @@ function createTimelineTracker() {
     await app.init({
         background: '#1099bb',
         resizeTo: canvasContainer,
-        width: 800,
-        height: 600,
+        width: 1440,
+        height: 1080,
+    });
+
+
+    const drawCallsElement = document.getElementById('draw-calls');
+    const vertexCountElement = document.getElementById('vertex-count')!;
+    const trianglesElement = document.getElementById('triangles')!;
+
+    let drawCount = 0;
+    const renderer = app.renderer as any;
+    const drawElements = renderer.gl.drawElements;
+    renderer.gl.drawElements = (...args: any[]) => {
+        drawElements.call(renderer.gl, ...args);
+        drawCount++;
+    };
+
+    app.ticker.add(() => {
+        if (drawCallsElement) {
+            drawCallsElement.textContent = drawCount.toString();
+        }
+        drawCount = 0;
+    });
+
+    EnableLoadDefaultSpineButton(() => {
+        canvasContainer.appendChild(app.canvas);
+
     });
 
     EnableDragAndDrop(canvasContainer, async (jsonFile, atlasFile, pngFile) => {
         canvasContainer.appendChild(app.canvas);
-
-        const drawCallsElement = document.getElementById('draw-calls');
-        const vertexCountElement = document.getElementById('vertex-count')!;
-        const trianglesElement = document.getElementById('triangles')!;
-
-        let drawCount = 0;
-        const renderer = app.renderer as any;
-        const drawElements = renderer.gl.drawElements;
-        renderer.gl.drawElements = (...args: any[]) => {
-            drawElements.call(renderer.gl, ...args);
-            drawCount++;
-        };
-
-        app.ticker.add(() => {
-            if (drawCallsElement) {
-                drawCallsElement.textContent = drawCount.toString();
-            }
-            drawCount = 0;
-        });
 
         const spineRenderContainer = new SpineRenderContainer();
         app.stage.addChild(spineRenderContainer);
@@ -282,6 +299,8 @@ class SpineController extends Container {
     constructor(parent: Container) {
         super();
 
+        this.label = 'SpineRender';
+
         const spineParent = new Container();
         const debugParent = new Container();
 
@@ -330,7 +349,7 @@ class SpineController extends Container {
         });
 
 
-        Ticker.shared.add((v) => this.onUpdate(v), this);
+        Ticker.shared.add(this.onUpdate, this);
     }
 
     onUpdate(ticker?: Ticker): void {
@@ -358,6 +377,13 @@ class SpineController extends Container {
 
     public getAnimationNames() {
         return this._spine.skeleton.data.animations.map(anim => anim.name);
+    }
+
+    public destroy() {
+        this._spine.destroy();
+        timelineTracker.clearListeners();
+        playButton.clearListeners();
+        Ticker.shared.remove(this.onUpdate, this);
     }
 
     public drawRect() {
