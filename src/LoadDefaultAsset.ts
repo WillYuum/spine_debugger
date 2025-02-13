@@ -17,12 +17,12 @@ function LoadDefaultAnimaton() {
 
     const onLoad = Assets.load([
         {
-            alias: 'spineAtlas',
+            alias: 'atlas',
             src: './assets/spineboy.atlas',
         },
         {
             alias: 'spineSkeleton',
-            src: './assets/spineboy.json',
+            src: './assets/spineboy-ess.json',
         },
         {
             alias: 'spineImage',
@@ -32,7 +32,7 @@ function LoadDefaultAnimaton() {
 
 
     onLoad.then((results) => {
-
+        console.log("Loaded default animation", results);
     });
 
     return onLoad;

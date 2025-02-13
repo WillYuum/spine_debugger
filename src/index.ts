@@ -140,6 +140,40 @@ function createTimelineTracker() {
     EnableLoadDefaultSpineButton(() => {
         canvasContainer.appendChild(app.canvas);
 
+        const spineRenderContainer = new SpineRenderContainer();
+        app.stage.addChild(spineRenderContainer);
+
+        EnableCanvasControls(canvasContainer, spineRenderContainer);
+
+        spineRenderContainer.x = app.screen.width / 2;
+        spineRenderContainer.y = app.screen.height / 2;
+
+        spineRenderContainer.boundsArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
+
+        const spineController = new SpineController(spineRenderContainer, timelineTracker, playButton);
+
+        document.getElementById('drop_message')?.remove();
+        document.getElementById('default_spine_button')?.remove();
+
+        const animNames = spineController.getAnimationNames();
+        populateAnimationsList(animNames, (animName) => {
+            spineController.play(animName);
+            playButton.forceChange(true);
+        });
+
+        app.ticker.add(() => {
+            spineController.drawRect();
+            // spineController.drawBoundsForAttachment();
+            spineController.drawBoundsForAttachment();
+        });
+
+        const vertexCount = spineController.getVertsCount();
+        const triangles = vertexCount / 2;
+
+        vertexCountElement.textContent = vertexCount.toString();
+
+        trianglesElement.textContent = triangles.toString();
+
     });
 
     EnableDragAndDrop(canvasContainer, async (jsonFile, atlasFile, pngFile) => {
@@ -148,53 +182,7 @@ function createTimelineTracker() {
         const spineRenderContainer = new SpineRenderContainer();
         app.stage.addChild(spineRenderContainer);
 
-        let isDragging = false;
-        let dragStart = new Point();
-
-        canvasContainer.addEventListener('wheel', (event) => {
-            event.preventDefault();
-            const zoomFactor = 1.1; // Adjust this factor for faster/slower zooming
-            if (event.deltaY < 0) {
-                spineRenderContainer.handleZoom(zoomFactor);
-            } else {
-                spineRenderContainer.handleZoom(1 / zoomFactor);
-            }
-        });
-
-        canvasContainer.addEventListener('mousedown', (event) => {
-            const leftMouseButton = 0;
-            if (event.button === leftMouseButton) {
-                isDragging = true;
-                const rect = canvasContainer.getBoundingClientRect();
-                dragStart.set(event.clientX - rect.left, event.clientY - rect.top);
-            }
-        });
-
-        canvasContainer.addEventListener('mousemove', (event) => {
-            if (isDragging) {
-                const rect = canvasContainer.getBoundingClientRect();
-                const currentMousePosition = new Point(
-                    event.clientX - rect.left,
-                    event.clientY - rect.top
-                );
-
-                const deltaX = currentMousePosition.x - dragStart.x;
-                const deltaY = currentMousePosition.y - dragStart.y;
-
-                spineRenderContainer.handleMove(deltaX, deltaY);
-                dragStart = currentMousePosition;
-            }
-        });
-
-        canvasContainer.addEventListener('mouseup', (event) => {
-            if (event.button === 0) {
-                isDragging = false;
-            }
-        });
-
-        canvasContainer.addEventListener('mouseleave', () => {
-            isDragging = false;
-        });
+        EnableCanvasControls(canvasContainer, spineRenderContainer);
 
         const spineLoader = new SpineLoader();
         const onLoadSpines = spineLoader.loadSpineAssets({
@@ -292,3 +280,54 @@ class SpineRenderContainer extends Container {
     }
 }
 
+
+
+function EnableCanvasControls(canvasContainer: HTMLElement, spineRenderContainer: SpineRenderContainer) {
+    let isDragging = false;
+    let dragStart = new Point();
+
+    canvasContainer.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        const zoomFactor = 1.1; // Adjust this factor for faster/slower zooming
+        if (event.deltaY < 0) {
+            spineRenderContainer.handleZoom(zoomFactor);
+        } else {
+            spineRenderContainer.handleZoom(1 / zoomFactor);
+        }
+    });
+
+    canvasContainer.addEventListener('mousedown', (event) => {
+        const leftMouseButton = 0;
+        if (event.button === leftMouseButton) {
+            isDragging = true;
+            const rect = canvasContainer.getBoundingClientRect();
+            dragStart.set(event.clientX - rect.left, event.clientY - rect.top);
+        }
+    });
+
+    canvasContainer.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+            const rect = canvasContainer.getBoundingClientRect();
+            const currentMousePosition = new Point(
+                event.clientX - rect.left,
+                event.clientY - rect.top
+            );
+
+            const deltaX = currentMousePosition.x - dragStart.x;
+            const deltaY = currentMousePosition.y - dragStart.y;
+
+            spineRenderContainer.handleMove(deltaX, deltaY);
+            dragStart = currentMousePosition;
+        }
+    });
+
+    canvasContainer.addEventListener('mouseup', (event) => {
+        if (event.button === 0) {
+            isDragging = false;
+        }
+    });
+
+    canvasContainer.addEventListener('mouseleave', () => {
+        isDragging = false;
+    });
+}
