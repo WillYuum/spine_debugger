@@ -158,13 +158,12 @@ body {
     background-color: #095e73;
     transform: scale(0.95);
 }
-
 /* Timeline Slider */
 #timeline {
     -webkit-appearance: none;
     width: 100%;
     height: 8px;
-    background: #ddd;
+    background: linear-gradient(90deg, #6ac1c5, #1099bb);
     border-radius: 5px;
     outline: none;
     transition: background 0.3s ease;
@@ -172,15 +171,16 @@ body {
 }
 
 #timeline:hover {
-    background: #bbb;
+    background: linear-gradient(90deg, #5aafaf, #0d7d99);
 }
 
 #timeline::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     background: #1099bb;
+    border: 2px solid #fff;
     border-radius: 50%;
     cursor: pointer;
     transition: background 0.3s ease, transform 0.2s ease;
@@ -192,9 +192,10 @@ body {
 }
 
 #timeline::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     background: #1099bb;
+    border: 2px solid #fff;
     border-radius: 50%;
     cursor: pointer;
 }
@@ -203,10 +204,20 @@ body {
     background: #0d7d99;
 }
 
-
+/* Timeline Controls */
 #timeline-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #444;
     margin-top: 10px;
+}
+
+/* Time Display */
+#current-time, #total-duration {
+    font-family: 'Arial', sans-serif;
+    font-size: 14px;
+    color: #555;
 }

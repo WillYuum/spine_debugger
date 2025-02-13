@@ -77,7 +77,9 @@ function createTimelineTracker() {
     const setNewAnimation = (step: number, max: number) => {
         timeline.max = max.toString();
         timeline.value = '0';
-        totalTime.textContent = max.toString();
+
+        const formatedValue = max.toFixed(2);
+        totalTime.textContent = formatedValue.toString();
         currentTime.textContent = step.toString();
 
 
@@ -88,6 +90,8 @@ function createTimelineTracker() {
 
     const updateTimeline = (value: number) => {
         timeline.value = value.toString();
+        const formatedValue = value.toFixed(2);
+        currentTime.textContent = formatedValue;
     }
 
     const onChange = (callback: (value: number) => void) => {
