@@ -165,10 +165,20 @@ function createTimelineTracker() {
             playButton.forceChange(true);
         });
 
+        const toggleDrawBoundsCheckbox = document.getElementById('toggle-draw-bounds') as HTMLInputElement;
+
+        let drawBoundsEnabled = toggleDrawBoundsCheckbox?.checked ?? true;
+
+        toggleDrawBoundsCheckbox?.addEventListener('change', () => {
+            drawBoundsEnabled = toggleDrawBoundsCheckbox.checked;
+            spineController.clearDrawBoundsForAttachment();
+        });
+
         app.ticker.add(() => {
-            spineController.drawRect();
-            // spineController.drawBoundsForAttachment();
-            spineController.drawBoundsForAttachment();
+            if (drawBoundsEnabled) {
+                spineController.drawRect();
+                spineController.drawBoundsForAttachment();
+            }
         });
 
         const vertexCount = spineController.getVertsCount();
@@ -219,12 +229,21 @@ function createTimelineTracker() {
                 playButton.forceChange(true);
             });
 
-            app.ticker.add(() => {
-                spineController.drawRect();
-                // spineController.drawBoundsForAttachment();
-                spineController.drawBoundsForAttachment();
+            const toggleDrawBoundsCheckbox = document.getElementById('toggle-draw-bounds') as HTMLInputElement;
+
+            let drawBoundsEnabled = toggleDrawBoundsCheckbox?.checked ?? true;
+
+            toggleDrawBoundsCheckbox?.addEventListener('change', () => {
+                drawBoundsEnabled = toggleDrawBoundsCheckbox.checked;
+                spineController.clearDrawBoundsForAttachment();
             });
 
+            app.ticker.add(() => {
+                if (drawBoundsEnabled) {
+                    spineController.drawRect();
+                    spineController.drawBoundsForAttachment();
+                }
+            });
             const vertexCount = spineController.getVertsCount();
             const triangles = vertexCount / 2;
 

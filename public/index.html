@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div id="container">
+    ` <div id="container">
         <div id="controls_side_panel">
             <h2>Animations</h2>
             <ul id="animations-list">
@@ -37,16 +37,25 @@
             <div id="canvas_editor" class="droppable_zone draggableArea">
                 <p id="drop_message">Drag and drop JSON, Atlas, and PNG files here</p>
             </div>
-            <div id="controls">
-                <p>Controls</p>
-                <button id="play-button">▶ Play</button>
-                <div id="timeline-container">
-                    <label for="timeline">Timeline</label>
-                    <div id="timeline-controls">
-                        <p id="current-time">0.00</p>
-                        <input type="range" id="timeline" min="0" max="100" value="0" step="1">
-                        <p id="total-duration">4.20</p>
+            <div class="bottom_controls">
+                <div id="controls">
+                    <p>Controls</p>
+                    <button id="play-button">▶ Play</button>
+                    <div id="timeline-container">
+                        <label for="timeline">Timeline</label>
+                        <div id="timeline-controls">
+                            <p id="current-time">0.00</p>
+                            <input type="range" id="timeline" min="0" max="100" value="0" step="1">
+                            <p id="total-duration">4.20</p>
+                        </div>
                     </div>
+                </div>
+
+                <div id="options" class="options-panel">
+                    <label class="option-checkbox">
+                        <input type="checkbox" id="toggle-draw-bounds">
+                        <span>Draw Bounds</span>
+                    </label>
                 </div>
             </div>
 

@@ -221,3 +221,53 @@ body {
     font-size: 14px;
     color: #555;
 }
+
+.options-panel {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px 20px;
+    margin-top: 20px;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.option-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    color: #444;
+    user-select: none;
+    transition: color 0.3s ease;
+}
+
+.option-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: #1099bb; /* modern browsers support this */
+    transition: transform 0.2s ease;
+}
+
+.option-checkbox input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+.option-checkbox:hover {
+    color: #1099bb;
+}
+
+
+.bottom_controls{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+}

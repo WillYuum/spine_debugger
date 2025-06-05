@@ -135,6 +135,11 @@ export class SpineController extends Container {
         });
     }
 
+    public clearDrawBoundsForAttachment() {
+        this._boundsDebugGraphics.clear();
+        this.graphics.clear();
+    }
+
     public getVertsCount() {
         let count = 0;
         this._spine.skeleton.slots.forEach(slot => {
