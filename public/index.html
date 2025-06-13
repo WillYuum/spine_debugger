@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spine Viewer</title>
     <link rel="stylesheet" href="./index.css">
+    <link rel="stylesheet" href="./timeline.css">
 </head>
 
 <body>
@@ -42,10 +43,16 @@
                     <div class="control-panel">
                         <h3>Playback</h3>
                         <button id="play-button">Play</button>
-                        <input id="timeline" type="range" min="0" max="100" />
-                        <div id="timeline-controls">
-                            <span id="current-time">0s</span>
-                            <span id="total-duration">10s</span>
+                        <div id="timeline-player">
+                            <div class="timeline-time" id="current-time">0.0s</div>
+                            <div class="timeline-track" id="timeline-track">
+                                <div class="timeline-progress" id="timeline-progress"></div>
+                                <div class="timeline-thumb" id="timeline-thumb"></div>
+                                <!-- Example keyframe -->
+                                <div class="timeline-keyframe" style="left: 25%;"></div>
+                                <div class="timeline-keyframe" style="left: 75%;"></div>
+                            </div>
+                            <div class="timeline-time" id="total-duration">10.0s</div>
                         </div>
                     </div>
                 </div>
