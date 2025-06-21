@@ -5,111 +5,25 @@ import { EnableLoadDefaultSpineButton } from './LoadDefaultAsset';
 import { SpineLoader } from './SpineLoader';
 import { SpineController } from './SpineController';
 
+import { TimelinePlayer } from './TimelinePlayer';
 
-export type TimelineTrackerType = ReturnType<typeof createTimelineTracker>;
-export type PlayButtonType = ReturnType<typeof createPlayButton>;
+const player = new TimelinePlayer();
 
-const playButton = createPlayButton();
+player.onPlayChange((isPlaying) => {
+    console.log('Play state changed:', isPlaying);
+    // Hook into render logic here
+});
 
-const timelineTracker = createTimelineTracker();
+player.onTimeChange((time) => {
+    // Hook into render logic here
+});
 
-function createPlayButton() {
-    const playButton = document.getElementById('play-button')!;
-    let isPlaying = false;
+// Optional: set a new animation length
+player.setDuration(15.0);
 
-    const updateButtonText = () => {
-        playButton.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
-    };
+// Optional: seek to a specific time
+player.setTime(3.5);
 
-    const listeners: ((isPlaying: boolean) => void)[] = [];
-
-    const onChange = (callback: (isPlaying: boolean) => void) => {
-        listeners.push(callback);
-    };
-
-    const notifyListeners = () => {
-        listeners.forEach(callback => callback(isPlaying));
-    };
-
-    const onClick = () => {
-        isPlaying = !isPlaying;
-        updateButtonText();
-        notifyListeners();
-    };
-
-    playButton.addEventListener('click', onClick);
-
-    const forceChange = (value: boolean) => {
-        isPlaying = value;
-        updateButtonText();
-        notifyListeners();
-    };
-
-    const clearListeners = () => {
-        listeners.length = 0;
-    }
-
-    return {
-        get isPlaying() { return isPlaying; },
-        forceChange,
-        onChange,
-        clearListeners,
-    };
-}
-
-
-function createTimelineTracker() {
-    const timeline = document.getElementById('timeline')! as HTMLInputElement;
-    const currentTime = document.getElementById('current-time')!;
-    const totalTime = document.getElementById('total-duration')!;
-    timeline.addEventListener('input', (event) => {
-        if (event.target) {
-            timeline.value = (event.target as HTMLInputElement).value;
-        }
-
-        listeners.forEach(listener => listener(parseFloat(timeline.value)));
-    });
-
-
-    const listeners: ((value: number) => void)[] = [];
-
-
-    const setNewAnimation = (step: number, max: number) => {
-        timeline.max = max.toString();
-        timeline.value = '0';
-
-        const formatedValue = max.toFixed(2);
-        totalTime.textContent = formatedValue.toString();
-        currentTime.textContent = step.toString();
-
-
-        const systemFPS = Ticker.shared.FPS;
-        const animDuration = max / systemFPS;
-        timeline.step = animDuration.toString();
-    }
-
-    const updateTimeline = (value: number) => {
-        timeline.value = value.toString();
-        const formatedValue = value.toFixed(2);
-        currentTime.textContent = formatedValue;
-    }
-
-    const onChange = (callback: (value: number) => void) => {
-        listeners.push(callback);
-    }
-
-    const clearListeners = () => {
-        listeners.length = 0;
-    }
-
-
-    return {
-        clearListeners,
-        onChange,
-        setNewAnimation,
-        updateTimeline,
-    }
-}
 
 (async () => {
     const app = new Application();
@@ -154,7 +68,9 @@ function createTimelineTracker() {
 
         spineRenderContainer.boundsArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
 
-        const spineController = new SpineController(spineRenderContainer, timelineTracker, playButton);
+        // TODO: Replace this stub with the actual timeline tracker instance if available
+        // const timelineTracker = undefined as any;
+        const spineController = new SpineController(spineRenderContainer, player);
 
         document.getElementById('drop_message')?.remove();
         document.getElementById('default_spine_button')?.remove();
@@ -162,7 +78,8 @@ function createTimelineTracker() {
         const animNames = spineController.getAnimationNames();
         populateAnimationsList(animNames, (animName) => {
             spineController.play(animName);
-            playButton.forceChange(true);
+            player.setTime(0);                // Reset timeline to start
+            player.setPlaying(true);
         });
 
         const toggleDrawBoundsCheckbox = document.getElementById('toggle-draw-bounds') as HTMLInputElement;
@@ -221,12 +138,12 @@ function createTimelineTracker() {
 
             spineRenderContainer.boundsArea = new Rectangle(0, 0, app.screen.width, app.screen.height);
 
-            const spineController = new SpineController(spineRenderContainer, timelineTracker, playButton);
+            const spineController = new SpineController(spineRenderContainer, player);
 
             const animNames = spineController.getAnimationNames();
             populateAnimationsList(animNames, (animName) => {
                 spineController.play(animName);
-                playButton.forceChange(true);
+                player.setPlaying(true);
             });
 
             const toggleDrawBoundsCheckbox = document.getElementById('toggle-draw-bounds') as HTMLInputElement;

@@ -1,6 +1,6 @@
 import { NumberArrayLike, RegionAttachment, Spine } from "@esotericsoftware/spine-pixi-v8";
 import { Container, Graphics, Rectangle, Ticker } from "pixi.js";
-import { PlayButtonType, TimelineTrackerType } from ".";
+import { TimelinePlayer } from "./TimelinePlayer"; // Adjust the import path as needed
 
 export class SpineController extends Container {
     private _spine: Spine;
@@ -8,7 +8,7 @@ export class SpineController extends Container {
     private _attachmentBounds: Graphics;
     private _boundsDebugGraphics: Graphics;
 
-    constructor(parent: Container, private timelineTracker: TimelineTrackerType, private playButton: PlayButtonType) {
+    constructor(parent: Container, private timelinePlayer: TimelinePlayer) {
         super();
 
         this.label = 'SpineRender';
@@ -37,54 +37,44 @@ export class SpineController extends Container {
 
         this.boundsArea = new Rectangle(this._spine.x, this._spine.y, this._spine.width, this._spine.height);
 
-
-        this.playButton.onChange((isPlaying) => {
-            if (isPlaying) {
-                this._spine.state.timeScale = 1;
-            } else {
-                this._spine.state.timeScale = 0;
-            }
+        // Play button changes
+        this.timelinePlayer.onPlayChange((isPlaying) => {
+            this._spine.state.timeScale = isPlaying ? 1 : 0;
         });
 
-        timelineTracker.onChange((value) => {
-            const currentAnim = this._spine.state.getCurrent(0)
-            if (currentAnim) {
-                currentAnim.trackTime = value;
-                this._spine.state.update(0.016);
-            }
+        // Timeline value changes
+        this.timelinePlayer.onTimeChange((value) => {
 
-            if (this.playButton.isPlaying) {
-                this.playButton.forceChange(false);
+            if (this.timelinePlayer.isChangingTimeManually()) {
+                // If the time is being changed manually, we can update the spine state directly
+                const currentAnim = this._spine.state.getCurrent(0);
 
-                this._spine.state.timeScale = 0;
+                if (currentAnim) {
+                    currentAnim.trackTime = value;
+                    this._spine.state.update(0.016);
+                }
             }
         });
-
 
         Ticker.shared.add(this.onUpdate, this);
     }
 
     onUpdate(ticker?: Ticker): void {
-        const isPlaying = this.playButton.isPlaying;
-
-        if (isPlaying == false) {
-            return;
-        }
+        if (!this.timelinePlayer.getIsPlaying()) return;
 
         const currentEntry = this._spine.state.getCurrent(0);
         if (currentEntry) {
             const currentTime = currentEntry.getAnimationTime();
-            this.timelineTracker.updateTimeline(currentTime);
+            this.timelinePlayer.setTime(currentTime);
         }
-
     }
 
     public play(animName: string) {
         const trackEntry = this._spine.state.setAnimation(0, animName, true);
-
         const duration = trackEntry.animationEnd - trackEntry.animationStart;
-        this.timelineTracker.setNewAnimation(0, duration);
-        this.timelineTracker.updateTimeline(0);
+
+        this.timelinePlayer.setDuration(duration);
+        this.timelinePlayer.setTime(0);
     }
 
     public getAnimationNames() {
@@ -93,8 +83,7 @@ export class SpineController extends Container {
 
     public destroy() {
         this._spine.destroy();
-        this.timelineTracker.clearListeners();
-        this.playButton.clearListeners();
+        // this.timelinePlayer.dispose();
         Ticker.shared.remove(this.onUpdate, this);
     }
 
