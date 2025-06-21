@@ -6,6 +6,7 @@ import { SpineLoader } from './SpineLoader';
 import { SpineController } from './SpineController';
 
 import { TimelinePlayer } from './TimelinePlayer';
+import { ControlPanelController } from './ControlPanelController';
 
 const player = new TimelinePlayer();
 
@@ -82,13 +83,20 @@ player.setTime(3.5);
             player.setPlaying(true);
         });
 
-        const toggleDrawBoundsCheckbox = document.getElementById('toggle-draw-bounds') as HTMLInputElement;
+        const control = new ControlPanelController();
 
-        let drawBoundsEnabled = toggleDrawBoundsCheckbox?.checked ?? true;
-
-        toggleDrawBoundsCheckbox?.addEventListener('change', () => {
-            drawBoundsEnabled = toggleDrawBoundsCheckbox.checked;
-            spineController.clearDrawBoundsForAttachment();
+        let drawBoundsEnabled = false;
+        control.onToggle((key, enabled) => {
+            switch (key) {
+                case 'drawBounds':
+                    console.log(`Draw bounds toggled: ${enabled}`);
+                    drawBoundsEnabled = enabled;
+                    spineController.clearDrawBoundsForAttachment();
+                    break;
+                default:
+                    console.warn(`Unknown control key: ${key}`);
+                    null;
+            }
         });
 
         app.ticker.add(() => {
@@ -146,13 +154,19 @@ player.setTime(3.5);
                 player.setPlaying(true);
             });
 
-            const toggleDrawBoundsCheckbox = document.getElementById('toggle-draw-bounds') as HTMLInputElement;
+            const control = new ControlPanelController();
 
-            let drawBoundsEnabled = toggleDrawBoundsCheckbox?.checked ?? true;
-
-            toggleDrawBoundsCheckbox?.addEventListener('change', () => {
-                drawBoundsEnabled = toggleDrawBoundsCheckbox.checked;
-                spineController.clearDrawBoundsForAttachment();
+            let drawBoundsEnabled = false;
+            control.onToggle((key, enabled) => {
+                console.log(`Control toggled: ${key} = ${enabled}`);
+                switch (key) {
+                    case 'drawBounds':
+                        drawBoundsEnabled = enabled;
+                        spineController.clearDrawBoundsForAttachment();
+                        break;
+                    default:
+                        null;
+                }
             });
 
             app.ticker.add(() => {
