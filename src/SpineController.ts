@@ -7,6 +7,11 @@ export class SpineController extends Container {
     private graphics: Graphics;
     private _attachmentBounds: Graphics;
     private _boundsDebugGraphics: Graphics;
+    private _loop: boolean = true;
+
+    get isLooping() {
+        return this._loop;
+    }
 
     constructor(parent: Container, private timelinePlayer: TimelinePlayer) {
         super();
@@ -70,11 +75,20 @@ export class SpineController extends Container {
     }
 
     public play(animName: string) {
-        const trackEntry = this._spine.state.setAnimation(0, animName, true);
+        const trackEntry = this._spine.state.setAnimation(0, animName, this._loop);
         const duration = trackEntry.animationEnd - trackEntry.animationStart;
 
         this.timelinePlayer.setDuration(duration);
         this.timelinePlayer.setTime(0);
+    }
+
+    public toggleLoop(loop: boolean) {
+        this._loop = loop;
+        const currentEntry = this._spine.state.getCurrent(0);
+        if (currentEntry) {
+            currentEntry.loop = loop;
+        }
+
     }
 
     public getAnimationNames() {

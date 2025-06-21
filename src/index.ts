@@ -93,6 +93,8 @@ player.setTime(3.5);
                     drawBoundsEnabled = enabled;
                     spineController.clearDrawBoundsForAttachment();
                     break;
+                case 'enableLoop':
+                    spineController.toggleLoop(enabled);
                 default:
                     console.warn(`Unknown control key: ${key}`);
                     null;
@@ -158,11 +160,13 @@ player.setTime(3.5);
 
             let drawBoundsEnabled = false;
             control.onToggle((key, enabled) => {
-                console.log(`Control toggled: ${key} = ${enabled}`);
                 switch (key) {
                     case 'drawBounds':
                         drawBoundsEnabled = enabled;
                         spineController.clearDrawBoundsForAttachment();
+                        break;
+                    case 'enableLoop':
+                        spineController.toggleLoop(enabled);
                         break;
                     default:
                         null;
