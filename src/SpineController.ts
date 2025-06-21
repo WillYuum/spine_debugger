@@ -1,6 +1,7 @@
 import { NumberArrayLike, RegionAttachment, Spine } from "@esotericsoftware/spine-pixi-v8";
 import { Container, Graphics, Rectangle, Ticker } from "pixi.js";
 import { TimelinePlayer } from "./TimelinePlayer"; // Adjust the import path as needed
+import { ControlPanelController } from "./ControlPanelController";
 
 export class SpineController extends Container {
     private _spine: Spine;
@@ -62,6 +63,9 @@ export class SpineController extends Container {
         });
 
         Ticker.shared.add(this.onUpdate, this);
+
+        const controlPanel = new ControlPanelController();
+        controlPanel.setToggle('enableLoop', this._loop);
     }
 
     onUpdate(ticker?: Ticker): void {
