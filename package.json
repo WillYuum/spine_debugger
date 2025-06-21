@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rsbuild build",
     "build:prod": "rspack build",
-    "start": "rsbuild dev",
+    "dev": "rsbuild dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
