@@ -61,23 +61,11 @@ const validTransitions: TransitionMap = {
 // 4. State manager
 class StateManager {
     private currentState: ToolState = ToolState.RUN_TOOL;
-    private handlers: LifeCycleStateHandlers;
+    private handlers: LifeCycleStateHandlers[] = [];
 
-    // Map ToolState enum to handler functions
-    private stateHandlerMap: Partial<Record<ToolState, () => Promise<void>>>;
-
-    constructor(handlers: LifeCycleStateHandlers) {
-        this.handlers = handlers;
-
-        // Automatically wrap all handler calls in Promise.resolve
-        this.stateHandlerMap = {
-            [ToolState.INIT_UI]: () => Promise.resolve(this.handlers.HandleInitUI()),
-            [ToolState.EMPTY_DISPLAY]: () => Promise.resolve(this.handlers.HandleEmptyDisplay()),
-            [ToolState.LOAD_SPINE]: () => Promise.resolve(this.handlers.HandleLoadSpine()),
-            [ToolState.ACTIVE_DISPLAY]: () => Promise.resolve(this.handlers.HandleActiveDisplay()),
-            [ToolState.CLEAR_SPINE]: () => Promise.resolve(this.handlers.HandleClearSpine()),
-            [ToolState.REPLACE_SPINE]: () => Promise.resolve(this.handlers.HandleReplaceSpine()),
-        };
+    constructor(handlers: LifeCycleStateHandlers | LifeCycleStateHandlers[]) {
+        // Normalize to array
+        this.handlers = Array.isArray(handlers) ? handlers : [handlers];
     }
 
     async switchState(nextState: ToolState): Promise<boolean> {
@@ -90,8 +78,15 @@ class StateManager {
         console.log(`✅ Transition: ${this.currentState} ➝ ${nextState}`);
         this.currentState = nextState;
 
-        const handler = this.stateHandlerMap[nextState];
-        if (handler) await handler(); // always returns a promise
+        // Run the state handler on all instances
+        const promises = this.handlers.map(handler => {
+            const methodName = `Handle${nextState}` as keyof LifeCycleStateHandlers;
+            const method = handler[methodName];
+            if (method) return Promise.resolve(method.call(handler));
+            return Promise.resolve(); // safety fallback
+        });
+
+        await Promise.all(promises);
 
         return true;
     }
@@ -102,9 +97,10 @@ export async function startCycle() {
     console.log("Tool starting...");
 
     const pixiInitializer = new PixiInitializer();
+    const testHandlers = new TestHandlers();
 
-    const handlers = new TestHandlers();
-    const stateManager = new StateManager(handlers);
+    // Pass multiple handlers to the state manager
+    const stateManager = new StateManager([pixiInitializer, testHandlers]);
 
     await stateManager.switchState(ToolState.INIT_UI);
     await stateManager.switchState(ToolState.EMPTY_DISPLAY);
