@@ -6,6 +6,10 @@ import { LifeCycleStateHandlers } from "./LifeCycle";
 export class PixiInitializer implements LifeCycleStateHandlers {
     private app: Application;
 
+    getApp(): Application {
+        return this.app;
+    }
+
     constructor() {
         this.app = new Application();
     }

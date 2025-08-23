@@ -1,4 +1,5 @@
 import { PixiInitializer } from "./PixiInitializer";
+import { MainViewPort } from "./visualComponents/MainViewPort";
 
 // 1. Interface for visual component logic
 export interface LifeCycleStateHandlers {
@@ -8,28 +9,6 @@ export interface LifeCycleStateHandlers {
     HandleActiveDisplay: () => Promise<void>;
     HandleReplaceSpine: () => Promise<void>;
     HandleClearSpine: () => Promise<void>;
-}
-
-// Example implementation
-class TestHandlers implements LifeCycleStateHandlers {
-    async HandleInitUI(): Promise<void> {
-        console.log("Init UI");
-    }
-    async HandleEmptyDisplay(): Promise<void> {
-        console.log("Empty display - waiting for user to load spine asset.");
-    }
-    async HandleLoadSpine(): Promise<void> {
-        console.log("Loading Spine asset...");
-    }
-    async HandleActiveDisplay(): Promise<void> {
-        console.log("Active display - showing Spine skeleton.");
-    }
-    async HandleReplaceSpine(): Promise<void> {
-        console.log("Replacing Spine asset.");
-    }
-    async HandleClearSpine(): Promise<void> {
-        console.log("Clearing Spine asset.");
-    }
 }
 
 // 2. Define all states as a TypeScript enum
@@ -58,14 +37,32 @@ const validTransitions: TransitionMap = {
     [ToolState.REPLACE_SPINE]: [ToolState.LOAD_SPINE],
 };
 
-// 4. State manager
-class StateManager {
+const stateToHandlerMap: Record<ToolState, keyof LifeCycleStateHandlers> = {
+    [ToolState.RUN_TOOL]: "HandleInitUI",        // or maybe no-op
+    [ToolState.INIT_UI]: "HandleInitUI",
+    [ToolState.EMPTY_DISPLAY]: "HandleEmptyDisplay",
+    [ToolState.LOAD_SPINE]: "HandleLoadSpine",
+    [ToolState.ACTIVE_DISPLAY]: "HandleActiveDisplay",
+    [ToolState.CLEAR_SPINE]: "HandleClearSpine",
+    [ToolState.REPLACE_SPINE]: "HandleReplaceSpine",
+};
+
+// 4. State manager (singleton-aware)
+export class StateManager {
+    private static instance?: StateManager;
     private currentState: ToolState = ToolState.RUN_TOOL;
     private handlers: LifeCycleStateHandlers[] = [];
 
     constructor(handlers: LifeCycleStateHandlers | LifeCycleStateHandlers[]) {
-        // Normalize to array
         this.handlers = Array.isArray(handlers) ? handlers : [handlers];
+        StateManager.instance = this; // register globally
+    }
+
+    static getInstance(): StateManager {
+        if (!StateManager.instance) {
+            throw new Error("❌ StateManager not initialized yet");
+        }
+        return StateManager.instance;
     }
 
     async switchState(nextState: ToolState): Promise<boolean> {
@@ -78,29 +75,56 @@ class StateManager {
         console.log(`✅ Transition: ${this.currentState} ➝ ${nextState}`);
         this.currentState = nextState;
 
-        // Run the state handler on all instances
+        const handlerMethod = stateToHandlerMap[nextState];
+
         const promises = this.handlers.map(handler => {
-            const methodName = `Handle${nextState}` as keyof LifeCycleStateHandlers;
-            const method = handler[methodName];
+            const method = handler[handlerMethod];
             if (method) return Promise.resolve(method.call(handler));
-            return Promise.resolve(); // safety fallback
+            return Promise.resolve();
         });
 
         await Promise.all(promises);
-
         return true;
     }
 }
 
-// 5. Entry point
+
+// Example implementation (non-visual)
+// class TestHandlers implements LifeCycleStateHandlers {
+//     async HandleInitUI(): Promise<void> {
+//         console.log("Init UI");
+//     }
+//     async HandleEmptyDisplay(): Promise<void> {
+//         console.log("Empty display - waiting for user to load spine asset.");
+//     }
+//     async HandleLoadSpine(): Promise<void> {
+//         console.log("Loading Spine asset...");
+//     }
+//     async HandleActiveDisplay(): Promise<void> {
+//         console.log("Active display - showing Spine skeleton.");
+//     }
+//     async HandleReplaceSpine(): Promise<void> {
+//         console.log("Replacing Spine asset.");
+//     }
+//     async HandleClearSpine(): Promise<void> {
+//         console.log("Clearing Spine asset.");
+//     }
+// }
+
+// 6. Entry point
 export async function startCycle() {
     console.log("Tool starting...");
 
     const pixiInitializer = new PixiInitializer();
-    const testHandlers = new TestHandlers();
+    // const testHandlers = new TestHandlers();
+    const mainViewPort = new MainViewPort(pixiInitializer.getApp());
 
-    // Pass multiple handlers to the state manager
-    const stateManager = new StateManager([pixiInitializer, testHandlers]);
+    // Pass multiple handlers to the state manager (auto-registers as singleton)
+    const stateManager = new StateManager([
+        pixiInitializer,
+        // testHandlers,
+        mainViewPort,
+    ]);
 
     await stateManager.switchState(ToolState.INIT_UI);
     await stateManager.switchState(ToolState.EMPTY_DISPLAY);
