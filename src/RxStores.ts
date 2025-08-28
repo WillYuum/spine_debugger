@@ -1,5 +1,13 @@
 // RxStores.ts
+import { Application } from 'pixi.js';
 import { BehaviorSubject } from 'rxjs';
+
+
+type SpineMetaData = {
+    drawCalls: number;
+    vertexCount: number;
+    triangleCount: number;
+}
 
 // Current animation time (seconds)
 export const animationTime$ = new BehaviorSubject<number>(0);
@@ -9,3 +17,7 @@ export const animationList$ = new BehaviorSubject<string[]>([]);
 
 // Currently selected animation
 export const selectedAnimation$ = new BehaviorSubject<string | null>(null);
+
+export const spineMetaData$ = new BehaviorSubject<SpineMetaData | null>(null);
+
+export const pixiApp$ = new BehaviorSubject<Application | null>(null);

@@ -1,6 +1,7 @@
 import { Application } from "pixi.js";
 import { LifeCycleStateHandlers } from "./LifeCycle";
 import { VisualComponent } from "./VisualComponent";
+import { pixiApp$ } from "./RxStores";
 
 
 
@@ -17,7 +18,6 @@ export class PixiInitializer extends VisualComponent {
     }
 
     async HandleInitUI() {
-        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         const canvasContainer = document.getElementById('canvas_editor')!;
 
         await this.app.init({
@@ -26,6 +26,8 @@ export class PixiInitializer extends VisualComponent {
             width: 1440,
             height: 1080,
         });
+
+        pixiApp$.next(this.app);
     }
 
     async HandleEmptyDisplay() {
@@ -48,15 +50,4 @@ export class PixiInitializer extends VisualComponent {
 
     }
 
-}
-
-async function initPixi() {
-    const app = new Application();
-    const canvasContainer = document.getElementById('canvas_editor')!;
-    await app.init({
-        background: '#1099bb',
-        resizeTo: canvasContainer,
-        width: 1440,
-        height: 1080,
-    });
 }

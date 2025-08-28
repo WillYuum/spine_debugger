@@ -1,11 +1,11 @@
-import { Application, Container, Graphics, Point, Rectangle } from "pixi.js";
+import { Application, Container, Graphics, Point, Rectangle, Ticker } from "pixi.js";
 import { LifeCycleStateHandlers, ToolState } from "../LifeCycle";
 import { EnableDragAndDrop } from "../DragAndDrop";
 import { SpineLoader } from "../SpineLoader";
 import { EnableLoadDefaultSpineButton } from "../LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
 import { VisualComponent } from "../VisualComponent";
-import { animationList$, selectedAnimation$ } from "../RxStores";
+import { animationList$, pixiApp$, selectedAnimation$, spineMetaData$ } from "../RxStores";
 
 
 
@@ -22,7 +22,6 @@ export class MainViewPort extends VisualComponent {
     private _spineController!: SpineController;
 
     async HandleInitUI(): Promise<void> {
-        console.log("Aolouuuu: HandleInitUI");
 
     }
 
@@ -73,6 +72,28 @@ export class MainViewPort extends VisualComponent {
                 this._spineController.play(animName);
             }
 
+        });
+
+
+        let drawCount = 0;
+        const renderer = pixiApp$.getValue()?.renderer as any;
+        const drawElements = renderer.gl.drawElements;
+        renderer.gl.drawElements = (...args: any[]) => {
+            drawElements.call(renderer.gl, ...args);
+            drawCount++;
+        };
+
+        Ticker.shared.add(() => {
+            const vertexCount = this._spineController.getVertsCount();
+            const triangleCount = vertexCount / 2;
+            console.log('Vertex Count:', vertexCount, 'Triangle Count:', triangleCount);
+            spineMetaData$.next({
+                drawCalls: drawCount,
+                vertexCount: this._spineController.getVertsCount(),
+                triangleCount: triangleCount,
+            });
+
+            drawCount = 0;
         });
     }
 
