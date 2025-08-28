@@ -1,24 +1,30 @@
 import { LifeCycleStateHandlers } from "../LifeCycle";
+import { animationList$, selectedAnimation$ } from "../RxStores";
+import { VisualComponent } from "../VisualComponent";
 
 
 
-class AnimationList implements LifeCycleStateHandlers {
+export class AnimationList extends VisualComponent {
 
 
 
-    private populateAnimationsList(animNames: string[], onClick: (animName: string) => void) {
+    private populateAnimationsList(animNames: string[]) {
         const list = document.getElementById('animations-list')!;
-        animNames.forEach((animName) => {
-            const listItem = document.createElement('li');
-            listItem.textContent = animName;
-            listItem.addEventListener('click', () => onClick(animName));
-            list.appendChild(listItem);
+        list.innerHTML = ""; // clear previous items
+        animNames.forEach(animName => {
+            const li = document.createElement('li');
+            li.textContent = animName;
+            li.addEventListener('click', () => selectedAnimation$.next(animName));
+            list.appendChild(li);
         });
     }
 
-
     async HandleInitUI() {
-
+        this.trackDataSub(
+            animationList$.subscribe(anims => {
+                this.populateAnimationsList(anims)
+            })
+        );
     }
 
     async HandleEmptyDisplay(): Promise<void> {
@@ -27,11 +33,11 @@ class AnimationList implements LifeCycleStateHandlers {
 
     async HandleLoadSpine(): Promise<void> {
 
-        const animNames = ['test_anim_1', 'test_anim_2'];
+        // const animNames = ['test_anim_1', 'test_anim_2'];
 
-        this.populateAnimationsList(animNames, (animName) => {
+        // this.populateAnimationsList(animNames, (animName) => {
 
-        });
+        // });
     }
 
     async HandleActiveDisplay(): Promise<void> {

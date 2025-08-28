@@ -5,6 +5,7 @@ import { SpineLoader } from "../SpineLoader";
 import { EnableLoadDefaultSpineButton } from "../LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
 import { VisualComponent } from "../VisualComponent";
+import { animationList$, selectedAnimation$ } from "../RxStores";
 
 
 
@@ -16,6 +17,9 @@ export class MainViewPort extends VisualComponent {
         super();
         this.pixiApp = application;
     }
+
+
+    private _spineController!: SpineController;
 
     async HandleInitUI(): Promise<void> {
         console.log("Aolouuuu: HandleInitUI");
@@ -49,26 +53,34 @@ export class MainViewPort extends VisualComponent {
 
         spineRenderContainer.boundsArea = new Rectangle(0, 0, this.pixiApp.screen.width, this.pixiApp.screen.height);
 
-        const spineController = new SpineController(spineRenderContainer);
+        this._spineController = new SpineController(spineRenderContainer);
 
 
         document.getElementById('drop_message')?.remove();
         document.getElementById('default_spine_button')?.remove();
 
+
+        const animations = this._spineController.getAnimationNames();
+
+        animationList$.next(animations);
+        this.changeState(ToolState.ACTIVE_DISPLAY);
     }
 
     async HandleActiveDisplay(): Promise<void> {
-        console.log("MainViewPort: HandleActiveDisplay");
+        selectedAnimation$.subscribe(animName => {
+            console.log('Selected animation:', animName);
+            if (animName !== null) {
+                this._spineController.play(animName);
+            }
 
+        });
     }
 
     async HandleReplaceSpine(): Promise<void> {
-        console.log("MainViewPort: HandleReplaceSpine");
 
     }
 
     async HandleClearSpine(): Promise<void> {
-        console.log("MainViewPort: HandleClearSpine");
 
     }
 }

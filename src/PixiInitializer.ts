@@ -1,9 +1,10 @@
 import { Application } from "pixi.js";
 import { LifeCycleStateHandlers } from "./LifeCycle";
+import { VisualComponent } from "./VisualComponent";
 
 
 
-export class PixiInitializer implements LifeCycleStateHandlers {
+export class PixiInitializer extends VisualComponent {
     private app: Application;
 
     getApp(): Application {
@@ -11,10 +12,12 @@ export class PixiInitializer implements LifeCycleStateHandlers {
     }
 
     constructor() {
+        super();
         this.app = new Application();
     }
 
     async HandleInitUI() {
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         const canvasContainer = document.getElementById('canvas_editor')!;
 
         await this.app.init({
