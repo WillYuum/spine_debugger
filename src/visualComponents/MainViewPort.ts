@@ -5,7 +5,7 @@ import { SpineLoader } from "../SpineLoader";
 import { EnableLoadDefaultSpineButton } from "../LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
 import { VisualComponent } from "../VisualComponent";
-import { animationList$, animationTime$, animationTime$$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
+import { animationList$, animationTime$, animationTime$$, drawBoundsOnSpine$, enableLoopOnSpine$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
 
 
 
@@ -62,6 +62,9 @@ export class MainViewPort extends VisualComponent {
         const animations = this._spineController.getAnimationNames();
 
         animationList$.next(animations);
+
+        enableLoopOnSpine$.next(true);
+
         this.changeState(ToolState.ACTIVE_DISPLAY);
     }
 
@@ -118,6 +121,15 @@ export class MainViewPort extends VisualComponent {
 
         isPlaying$.subscribe(isPlaying => {
             this._spineController.setPlay(isPlaying);
+        });
+
+        drawBoundsOnSpine$.subscribe(shouldDraw => {
+            this._spineController.toggleDrawBounds(shouldDraw);
+        });
+
+        enableLoopOnSpine$.subscribe(shouldLoop => {
+            console.log('Changed loop')
+            this._spineController.toggleLoop(shouldLoop);
         });
     }
 

@@ -26,3 +26,6 @@ export const isPlaying$ = new BehaviorSubject<boolean>(false);
 
 export const totalAnimDuration$ = new BehaviorSubject<number>(0);
 export const animationTime$$ = new BehaviorSubject<number>(0);
+
+export const drawBoundsOnSpine$ = new BehaviorSubject<boolean>(false);
+export const enableLoopOnSpine$ = new BehaviorSubject<boolean>(false);

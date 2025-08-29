@@ -3,6 +3,7 @@ import { TimelinePlayer } from "./visualComponents/TimelinePlayer";
 import { AnimationList } from "./visualComponents/AnimationList";
 import { MainViewPort } from "./visualComponents/MainViewPort";
 import { SpineMetaData } from "./visualComponents/SpineMetaInfo";
+import { AnimationOptions } from "./visualComponents/AnimationOptions";
 
 // 1. Interface for visual component logic
 export interface LifeCycleStateHandlers {
@@ -107,6 +108,7 @@ export async function startCycle() {
     const timelinePlayer = new TimelinePlayer();
     const animationList = new AnimationList();
     const spineMetaData = new SpineMetaData();
+    const animationOptions = new AnimationOptions();
 
     const stateManager = new StateManager([
         pixiInitializer,
@@ -114,7 +116,8 @@ export async function startCycle() {
         mainViewPort,
         timelinePlayer,
         animationList,
-        spineMetaData
+        spineMetaData,
+        animationOptions,
     ]);
 
     await stateManager.switchState(ToolState.INIT_UI);

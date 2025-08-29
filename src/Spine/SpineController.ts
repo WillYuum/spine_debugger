@@ -12,6 +12,8 @@ export class SpineController extends Container {
     private _loop: boolean = true;
     private _isPlaying = false;
 
+    private _drawBounds = false;
+
     get isLooping() {
         return this._loop;
     }
@@ -82,6 +84,10 @@ export class SpineController extends Container {
         //     const currentTime = currentEntry.getAnimationTime();
         //     this.timelinePlayer.setTime(currentTime);
         // }
+
+        if (this._drawBounds) {
+            this.drawBoundsForAttachment();
+        }
     }
 
     public setPlay(playing: boolean) {
@@ -149,6 +155,11 @@ export class SpineController extends Container {
         this.graphics.x = -this._spine.width / 2;
         this.graphics.y = -this._spine.height;
     }
+
+    public toggleDrawBounds(active: boolean) {
+        this._drawBounds = active;
+    }
+
 
     public drawBoundsForAttachment() {
         this._boundsDebugGraphics.clear();
