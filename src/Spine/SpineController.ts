@@ -158,6 +158,10 @@ export class SpineController extends Container {
 
     public toggleDrawBounds(active: boolean) {
         this._drawBounds = active;
+
+        if (active === false) {
+            this.clearDrawBoundsForAttachment();
+        }
     }
 
 
