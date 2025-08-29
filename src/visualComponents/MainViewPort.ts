@@ -5,7 +5,7 @@ import { SpineLoader } from "../SpineLoader";
 import { EnableLoadDefaultSpineButton } from "../LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
 import { VisualComponent } from "../VisualComponent";
-import { animationList$, pixiApp$, selectedAnimation$, spineMetaData$ } from "../RxStores";
+import { animationList$, animationTime$, animationTime$$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
 
 
 
@@ -70,6 +70,15 @@ export class MainViewPort extends VisualComponent {
             console.log('Selected animation:', animName);
             if (animName !== null) {
                 this._spineController.play(animName);
+
+                const totalDuration = this._spineController.getTotalDurationOfAnimation();
+                const currentDuration = this._spineController.getCurrentDurationOfAnimation();
+
+                console.log('Current duration:', currentDuration);
+
+
+                totalAnimDuration$.next(totalDuration);
+                animationTime$$.next(currentDuration);
             }
 
         });
@@ -84,16 +93,31 @@ export class MainViewPort extends VisualComponent {
         };
 
         Ticker.shared.add(() => {
+            if (this._spineController.IsPlaying() && selectedAnimation$.getValue() !== null) {
+                const currentDuration = this._spineController.getCurrentDurationOfAnimation();
+                // console.log('Current duration:', currentDuration);
+                animationTime$$.next(currentDuration);
+            };
+
             const vertexCount = this._spineController.getVertsCount();
             const triangleCount = vertexCount / 2;
-            console.log('Vertex Count:', vertexCount, 'Triangle Count:', triangleCount);
             spineMetaData$.next({
                 drawCalls: drawCount,
                 vertexCount: this._spineController.getVertsCount(),
                 triangleCount: triangleCount,
             });
 
+
             drawCount = 0;
+        });
+
+
+        animationTime$.subscribe(currentDuration => {
+            this._spineController.setTime(currentDuration);
+        });
+
+        isPlaying$.subscribe(isPlaying => {
+            this._spineController.setPlay(isPlaying);
         });
     }
 

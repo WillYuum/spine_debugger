@@ -1,5 +1,6 @@
 import { NumberArrayLike, RegionAttachment, Spine } from "@esotericsoftware/spine-pixi-v8";
 import { Container, Graphics, Rectangle, Ticker } from "pixi.js";
+import { isPlaying$ } from "../RxStores";
 // import { TimelinePlayer } from "./TimelinePlayer"; // Adjust the import path as needed
 // import { ControlPanelController } from "./ControlPanelController";
 
@@ -9,9 +10,14 @@ export class SpineController extends Container {
     private _attachmentBounds: Graphics;
     private _boundsDebugGraphics: Graphics;
     private _loop: boolean = true;
+    private _isPlaying = false;
 
     get isLooping() {
         return this._loop;
+    }
+
+    public IsPlaying() {
+        return this._isPlaying;
     }
 
     constructor(parent: Container/* , private timelinePlayer: TimelinePlayer */) {
@@ -78,12 +84,37 @@ export class SpineController extends Container {
         // }
     }
 
+    public setPlay(playing: boolean) {
+        this._isPlaying = playing;
+        this._spine.state.timeScale = playing ? 1 : 0;
+    }
+
     public play(animName: string) {
         const trackEntry = this._spine.state.setAnimation(0, animName, this._loop);
         const duration = trackEntry.animationEnd - trackEntry.animationStart;
+        this._isPlaying = true;
+
+        isPlaying$.next(this._isPlaying);
 
         // this.timelinePlayer.setDuration(duration);
         // this.timelinePlayer.setTime(0);
+    }
+
+    public getCurrentDurationOfAnimation() {
+        const currentEntry = this._spine.state.getCurrent(0);
+        return currentEntry?.getAnimationTime() || 0.0;
+    }
+
+    public getTotalDurationOfAnimation() {
+        const currentEntry = this._spine.state.getCurrent(0);
+        return currentEntry ? currentEntry.animationEnd - currentEntry.animationStart : 0;
+    }
+
+    public setTime(time: number) {
+        const currentEntry = this._spine.state.getCurrent(0);
+        if (currentEntry) {
+            currentEntry.trackTime = time;
+        }
     }
 
     public toggleLoop(loop: boolean) {
@@ -103,6 +134,8 @@ export class SpineController extends Container {
         this._spine.destroy();
         // this.timelinePlayer.dispose();
         Ticker.shared.remove(this.onUpdate, this);
+        this._isPlaying = false;
+        isPlaying$.next(this._isPlaying);
     }
 
     public drawRect() {
@@ -157,7 +190,7 @@ export class SpineController extends Container {
                 const vertCount = this.getVertCounFromUv(regionAttachment.uvs);
                 count += vertCount;
             } else {
-                console.log("Unknown attachment type");
+                // console.log("Unknown attachment type");
             }
         });
         return count;

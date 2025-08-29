@@ -21,3 +21,8 @@ export const selectedAnimation$ = new BehaviorSubject<string | null>(null);
 export const spineMetaData$ = new BehaviorSubject<SpineMetaData | null>(null);
 
 export const pixiApp$ = new BehaviorSubject<Application | null>(null);
+
+export const isPlaying$ = new BehaviorSubject<boolean>(false);
+
+export const totalAnimDuration$ = new BehaviorSubject<number>(0);
+export const animationTime$$ = new BehaviorSubject<number>(0);

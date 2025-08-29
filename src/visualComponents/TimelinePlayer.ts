@@ -1,57 +1,77 @@
-import { LifeCycleStateHandlers } from "../LifeCycle";
+import { VisualComponent } from "../VisualComponent";
+import { animationTime$, animationTime$$, isPlaying$, selectedAnimation$, totalAnimDuration$ } from "../RxStores"; // new reactive stores
+import { Subscription } from "rxjs";
 
+export class TimelinePlayer extends VisualComponent {
+    private playButton: HTMLButtonElement | null = null;
+    private currentTimeEl: HTMLElement | null = null;
+    private totalTimeEl: HTMLElement | null = null;
+    private track: HTMLElement | null = null;
+    private currentDuration: HTMLElement | null = null;
+    private thumb: HTMLElement | null = null;
 
-type PlayChangeCallback = (isPlaying: boolean) => void;
-type TimeChangeCallback = (time: number) => void;
-
-
-export class TimelinePlayer implements LifeCycleStateHandlers {
-    private playButton: HTMLButtonElement;
-    private currentTimeEl: HTMLElement;
-    private totalTimeEl: HTMLElement;
-    private track: HTMLElement;
-    private progress: HTMLElement;
-    private thumb: HTMLElement;
-
-    private isPlaying: boolean = false;
     private isDragging = false;
     private duration: number = 10.0;
-    private currentTime: number = 0.0;
 
-    private playListeners: PlayChangeCallback[] = [];
-    private timeListeners: TimeChangeCallback[] = [];
+    // Internal state is now derived from stores
+    private currentTime: number = 0;
+    private isPlaying: boolean = false;
 
-    constructor() {
+    async HandleInitUI(): Promise<void> {
         this.playButton = document.getElementById('play-button') as HTMLButtonElement;
         this.currentTimeEl = document.getElementById('current-time')!;
         this.totalTimeEl = document.getElementById('total-duration')!;
         this.track = document.getElementById('timeline-track')!;
-        this.progress = document.getElementById('timeline-progress')!;
+        this.currentDuration = document.getElementById('timeline-progress')!;
         this.thumb = document.getElementById('timeline-thumb')!;
 
         this.initPlayButton();
         this.initTimelineDragging();
         this.renderTime();
         this.renderProgress();
+
+        // Subscribe to reactive stores
+        this.trackDataSub(animationTime$.subscribe(time => {
+            if (!this.isDragging) {
+                this.currentTime = time;
+                this.renderTime();
+                this.renderProgress();
+            }
+        }));
+
+        this.trackDataSub(isPlaying$.subscribe(playing => {
+            this.isPlaying = playing;
+            this.updatePlayButtonText();
+        }));
+
+        // Reset timeline
+        this.setTime(0);
+        this.setPlaying(false);
     }
 
-    // ============================
-    // TimelinePlayer internal logic
-    // ============================
-
     private initPlayButton() {
+        if (!this.playButton) return;
+
         this.playButton.addEventListener('click', () => {
-            this.isPlaying = !this.isPlaying;
-            this.updatePlayButtonText();
-            this.notifyPlayListeners();
+            this.setPlaying(!this.isPlaying);
         });
+
         this.updatePlayButtonText();
     }
 
     private initTimelineDragging() {
+        if (!this.track) return;
+
         const onMouseMove = (e: MouseEvent) => {
             if (!this.isDragging) return;
-            const rect = this.track.getBoundingClientRect();
+
+            if (this.isPlaying) {
+                this.setPlaying(false);
+                isPlaying$.next(false);
+            }
+
+            console.log("dragging");
+            const rect = this.track!.getBoundingClientRect();
             const percent = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
             this.setTime(this.duration * percent);
         };
@@ -73,102 +93,64 @@ export class TimelinePlayer implements LifeCycleStateHandlers {
     }
 
     private updatePlayButtonText() {
+        if (!this.playButton) return;
         this.playButton.textContent = this.isPlaying ? '⏸ Pause' : '▶ Play';
     }
 
     private renderTime() {
-        this.currentTimeEl.textContent = `${this.currentTime.toFixed(1)}s`;
-        this.totalTimeEl.textContent = `${this.duration.toFixed(1)}s`;
+        if (this.currentTimeEl && this.totalTimeEl) {
+            this.currentTimeEl.textContent = `${this.currentTime.toFixed(1)}s`;
+            this.totalTimeEl.textContent = `${this.duration.toFixed(1)}s`;
+        }
     }
 
     private renderProgress() {
+        if (!this.currentDuration || !this.thumb) return;
+
+        // console.log("woop woop")
+
         const percent = this.duration > 0 ? (this.currentTime / this.duration) * 100 : 0;
-        this.progress.style.width = `${percent}%`;
+        this.currentDuration.style.width = `${percent}%`;
         this.thumb.style.left = `${percent}%`;
     }
 
-    private notifyPlayListeners() {
-        this.playListeners.forEach(cb => cb(this.isPlaying));
-    }
-
-    private notifyTimeListeners() {
-        this.timeListeners.forEach(cb => cb(this.currentTime));
-    }
-
-    public onPlayChange(callback: PlayChangeCallback) {
-        this.playListeners.push(callback);
-    }
-
-    public onTimeChange(callback: TimeChangeCallback) {
-        this.timeListeners.push(callback);
+    /** Updates both internal state and reactive stores */
+    public setTime(time: number) {
+        console.log("setting time");
+        this.currentTime = Math.max(0, Math.min(time, this.duration));
+        animationTime$.next(this.currentTime); // reactive store update
+        this.renderTime();
+        this.renderProgress();
     }
 
     public setPlaying(playing: boolean) {
         this.isPlaying = playing;
+        isPlaying$.next(this.isPlaying); // reactive store update
         this.updatePlayButtonText();
-        this.notifyPlayListeners();
-    }
-
-    public setTime(time: number) {
-        this.currentTime = Math.max(0, Math.min(time, this.duration));
-        this.renderTime();
-        this.renderProgress();
-        this.notifyTimeListeners();
     }
 
     public setDuration(duration: number) {
         this.duration = duration;
         this.renderTime();
         this.renderProgress();
+
+        // console.log('Current duration:', this.duration);
     }
 
     public getTime() { return this.currentTime; }
-    public getDuration() { return this.duration; }
     public getIsPlaying() { return this.isPlaying; }
     public isChangingTimeManually() { return this.isDragging; }
 
-    // ============================
-    // LifeCycleStateHandlers methods
-    // ============================
-
-    async HandleInitUI(): Promise<void> {
-        console.log("TimelinePlayer: HandleInitUI");
-        // e.g., reset timeline
-        this.setTime(0);
-        this.setPlaying(false);
-    }
-
-    async HandleEmptyDisplay(): Promise<void> {
-        console.log("TimelinePlayer: HandleEmptyDisplay");
-        // Optionally hide timeline or disable controls
-        this.setPlaying(false);
-        this.setTime(0);
-    }
-
-    async HandleLoadSpine(): Promise<void> {
-        console.log("TimelinePlayer: HandleLoadSpine");
-        // Could reset timeline for new animation
-        this.setTime(0);
-        this.setPlaying(false);
-    }
-
+    // Lifecycle handlers reset timeline
+    async HandleEmptyDisplay(): Promise<void> { this.setPlaying(false); this.setTime(0); }
+    async HandleLoadSpine(): Promise<void> { this.setPlaying(false); this.setTime(0); }
     async HandleActiveDisplay(): Promise<void> {
-        console.log("TimelinePlayer: HandleActiveDisplay");
-        // Optionally enable timeline controls
         this.setPlaying(true);
-    }
 
-    async HandleReplaceSpine(): Promise<void> {
-        console.log("TimelinePlayer: HandleReplaceSpine");
-        // Reset timeline
-        this.setTime(0);
-        this.setPlaying(false);
-    }
 
-    async HandleClearSpine(): Promise<void> {
-        console.log("TimelinePlayer: HandleClearSpine");
-        // Reset timeline
-        this.setTime(0);
-        this.setPlaying(false);
+        totalAnimDuration$.subscribe(dur => this.setDuration(dur));
+        animationTime$$.subscribe(dur => this.setTime(dur));
     }
+    async HandleReplaceSpine(): Promise<void> { this.setPlaying(false); this.setTime(0); }
+    async HandleClearSpine(): Promise<void> { this.setPlaying(false); this.setTime(0); }
 }
