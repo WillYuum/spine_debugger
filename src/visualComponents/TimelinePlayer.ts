@@ -70,7 +70,6 @@ export class TimelinePlayer extends VisualComponent {
                 isPlaying$.next(false);
             }
 
-            console.log("dragging");
             const rect = this.track!.getBoundingClientRect();
             const percent = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
             this.setTime(this.duration * percent);
@@ -107,8 +106,6 @@ export class TimelinePlayer extends VisualComponent {
     private renderProgress() {
         if (!this.currentDuration || !this.thumb) return;
 
-        // console.log("woop woop")
-
         const percent = this.duration > 0 ? (this.currentTime / this.duration) * 100 : 0;
         this.currentDuration.style.width = `${percent}%`;
         this.thumb.style.left = `${percent}%`;
@@ -116,7 +113,6 @@ export class TimelinePlayer extends VisualComponent {
 
     /** Updates both internal state and reactive stores */
     public setTime(time: number) {
-        console.log("setting time");
         this.currentTime = Math.max(0, Math.min(time, this.duration));
         animationTime$.next(this.currentTime); // reactive store update
         this.renderTime();
@@ -133,8 +129,6 @@ export class TimelinePlayer extends VisualComponent {
         this.duration = duration;
         this.renderTime();
         this.renderProgress();
-
-        // console.log('Current duration:', this.duration);
     }
 
     public getTime() { return this.currentTime; }

@@ -26,9 +26,7 @@ export class MainViewPort extends VisualComponent {
     }
 
     async HandleEmptyDisplay(): Promise<void> {
-        console.log("MainViewPort: HandleEmptyDisplay");
         EnableLoadDefaultSpineButton(() => {
-            console.log("Load default spine button clicked");
             this.changeState(ToolState.LOAD_SPINE);
 
         });
@@ -70,14 +68,11 @@ export class MainViewPort extends VisualComponent {
 
     async HandleActiveDisplay(): Promise<void> {
         selectedAnimation$.subscribe(animName => {
-            console.log('Selected animation:', animName);
             if (animName !== null) {
                 this._spineController.play(animName);
 
                 const totalDuration = this._spineController.getTotalDurationOfAnimation();
                 const currentDuration = this._spineController.getCurrentDurationOfAnimation();
-
-                console.log('Current duration:', currentDuration);
 
 
                 totalAnimDuration$.next(totalDuration);
@@ -98,7 +93,6 @@ export class MainViewPort extends VisualComponent {
         Ticker.shared.add(() => {
             if (this._spineController.IsPlaying() && selectedAnimation$.getValue() !== null) {
                 const currentDuration = this._spineController.getCurrentDurationOfAnimation();
-                // console.log('Current duration:', currentDuration);
                 animationTime$$.next(currentDuration);
             };
 
@@ -128,7 +122,6 @@ export class MainViewPort extends VisualComponent {
         });
 
         enableLoopOnSpine$.subscribe(shouldLoop => {
-            console.log('Changed loop')
             this._spineController.toggleLoop(shouldLoop);
         });
     }

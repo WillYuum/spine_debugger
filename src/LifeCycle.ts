@@ -82,7 +82,7 @@ export class StateManager {
             return false;
         }
 
-        console.log(`✅ Transition: ${this.currentState} ➝ ${nextState}`);
+        // console.log(`✅ Transition: ${this.currentState} ➝ ${nextState}`);
         this.currentState = nextState;
 
         const handlerMethodName = stateHandlerMap[nextState];

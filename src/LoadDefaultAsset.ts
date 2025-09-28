@@ -11,9 +11,6 @@ export function EnableLoadDefaultSpineButton(cb: CallableFunction) {
 }
 
 function LoadDefaultAnimaton() {
-    console.log("Loading default animation");
-    // const jsonDir = './assets/'
-
 
     const onLoad = Assets.load([
         {
@@ -32,7 +29,7 @@ function LoadDefaultAnimaton() {
 
 
     onLoad.then((results) => {
-        console.log("Loaded default animation", results);
+        // console.log("Loaded default animation", results);
     });
 
     return onLoad;

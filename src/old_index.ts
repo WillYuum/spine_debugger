@@ -11,7 +11,7 @@ import { ControlPanelController } from './ControlPanelController';
 const player = new TimelinePlayer();
 
 player.onPlayChange((isPlaying) => {
-    console.log('Play state changed:', isPlaying);
+    // console.log('Play state changed:', isPlaying);
     // Hook into render logic here
 });
 
@@ -89,7 +89,7 @@ player.setTime(3.5);
         control.onToggle((key, enabled) => {
             switch (key) {
                 case 'drawBounds':
-                    console.log(`Draw bounds toggled: ${enabled}`);
+                    // console.log(`Draw bounds toggled: ${enabled}`);
                     drawBoundsEnabled = enabled;
                     spineController.clearDrawBoundsForAttachment();
                     break;
@@ -230,7 +230,7 @@ class SpineRenderContainer extends Container {
         this.graphics.clear();
         const boundsArea = this.boundsArea;
 
-        console.log("boundsArea", boundsArea);
+        // console.log("boundsArea", boundsArea);
 
         this.graphics
             .rect(boundsArea.left, boundsArea.top, boundsArea.width, boundsArea.height)
