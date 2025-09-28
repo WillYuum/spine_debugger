@@ -13,23 +13,23 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@rsbuild/core": "^1.4.15",
-    "@rsdoctor/rspack-plugin": "^1.2.1",
-    "@rspack/cli": "^1.4.11",
+    "@rsbuild/core": "^1.5.12",
+    "@rsdoctor/rspack-plugin": "^1.3.1",
+    "@rspack/cli": "^1.5.7",
     "@types/dropzone": "^5.7.9",
-    "copy-webpack-plugin": "^13.0.0",
+    "copy-webpack-plugin": "^13.0.1",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
-    "html-webpack-plugin": "^5.6.3",
+    "html-webpack-plugin": "^5.6.4",
     "style-loader": "^4.0.0",
-    "ts-loader": "^9.5.2",
+    "ts-loader": "^9.5.4",
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@esotericsoftware/spine-pixi-v8": "^4.2.88",
+    "@esotericsoftware/spine-pixi-v8": "^4.2.92",
     "@rspack/core": "^1.3.15",
     "dropzone": "5.9.3",
-    "pixi.js": "^8.12.0",
+    "pixi.js": "^8.13.2",
     "rxjs": "^7.8.2"
   }
 }
