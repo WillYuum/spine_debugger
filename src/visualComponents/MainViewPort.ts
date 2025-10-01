@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Point, Rectangle, Ticker } from "pixi.js";
+import { Application, Assets, Container, Graphics, Point, Rectangle, Ticker } from "pixi.js";
 import { LifeCycleStateHandlers, ToolState } from "../LifeCycle";
 import { EnableDragAndDrop } from "../DragAndDrop";
 import { SpineLoader } from "../SpineLoader";
@@ -6,6 +6,7 @@ import { EnableLoadDefaultSpineButton } from "../LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
 import { VisualComponent } from "../VisualComponent";
 import { animationList$, animationTime$, animationTime$$, drawBoundsOnSpine$, enableLoopOnSpine$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
+import { SpineTexture, TextureAtlas } from "@esotericsoftware/spine-pixi-v8";
 
 
 
@@ -28,9 +29,37 @@ export class MainViewPort extends VisualComponent {
     async HandleEmptyDisplay(): Promise<void> {
         EnableLoadDefaultSpineButton(() => {
             this.changeState(ToolState.LOAD_SPINE);
-
         });
 
+        const canvasContainer = document.getElementById('canvas_editor')!;
+        EnableDragAndDrop(canvasContainer, async (jsonFile, atlasFile, pngFile) => {
+
+            const spineLoader = new SpineLoader();
+            const onLoadSpines = spineLoader.loadSpineAssets({
+                atlasFile: atlasFile,
+                jsonFile: jsonFile,
+                pngFile: pngFile,
+            });
+
+
+            onLoadSpines.then((v) => {
+                const { spineAtlas, spineImage } = v;
+                
+                const textureAtlas = new TextureAtlas(spineAtlas);
+                Assets.cache.set('atlas', textureAtlas);
+                
+                for (const page of textureAtlas.pages) {
+                    const sprite = Assets.get('spineImage');
+                    page.setTexture(SpineTexture.from(sprite.source));
+                }
+
+                this.changeState(ToolState.LOAD_SPINE);
+
+            }).catch(error => {
+                console.error("Failed to load assets", error);
+            });
+
+        });
     }
 
     async HandleLoadSpine(): Promise<void> {
