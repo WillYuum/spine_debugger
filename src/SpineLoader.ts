@@ -23,19 +23,19 @@ export class SpineLoader {
                     alias: 'spineAtlas',
                     src: atlasBase64,
                     format: 'atlas',
-                    loadParser: 'loadTxt'
+                    parser: 'loadTxt'
                 },
                 {
                     alias: 'spineSkeleton',
                     src: jsonURL,
                     format: 'json',
-                    loadParser: 'loadJson',
+                    parser: 'loadJson',
                 },
                 {
                     alias: 'spineImage',
                     src: imageURL,
                     format: 'png',
-                    loadParser: 'loadTextures',
+                    parser: 'loadTextures',
                 },
             ], this.onSpineProgress);
 
