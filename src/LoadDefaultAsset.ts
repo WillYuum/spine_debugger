@@ -10,6 +10,16 @@ export function EnableLoadDefaultSpineButton(cb: CallableFunction) {
     });
 }
 
+export function toggleDisableDefaultButton(disable: boolean) {
+    const button = document.getElementById('default_spine_button') as HTMLElement;
+    if (disable) {
+        console.log("Hiding default spine button");
+        button.style.display = 'none';
+    } else {
+        button.style.display = '';
+    }
+}
+
 function LoadDefaultAnimaton() {
 
     const onLoad = Assets.load([

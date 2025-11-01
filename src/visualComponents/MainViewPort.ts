@@ -2,7 +2,7 @@ import { Application, Assets, Container, Graphics, Point, Rectangle, Ticker } fr
 import { LifeCycleStateHandlers, ToolState } from "../LifeCycle";
 import { EnableDragAndDrop } from "../DragAndDrop";
 import { SpineLoader } from "../SpineLoader";
-import { EnableLoadDefaultSpineButton } from "../LoadDefaultAsset";
+import { EnableLoadDefaultSpineButton, toggleDisableDefaultButton } from "../LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
 import { VisualComponent } from "../VisualComponent";
 import { animationList$, animationTime$, animationTime$$, drawBoundsOnSpine$, enableLoopOnSpine$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
@@ -64,6 +64,8 @@ export class MainViewPort extends VisualComponent {
 
     async HandleLoadSpine(): Promise<void> {
 
+        toggleDisableDefaultButton(true);
+
         const canvasContainer = document.getElementById('canvas_editor')!;
 
         canvasContainer.appendChild(this.pixiApp.canvas);
@@ -83,8 +85,6 @@ export class MainViewPort extends VisualComponent {
 
 
         document.getElementById('drop_message')?.remove();
-        document.getElementById('default_spine_button')?.remove();
-
 
         const animations = this._spineController.getAnimationNames();
 
