@@ -1,4 +1,4 @@
-import { NumberArrayLike, RegionAttachment, Spine } from "@esotericsoftware/spine-pixi-v8";
+import { NumberArrayLike, RegionAttachment, Spine, EventTimeline } from "@esotericsoftware/spine-pixi-v8";
 import { Container, Graphics, Rectangle, Ticker } from "pixi.js";
 import { isPlaying$ } from "../RxStores";
 // import { TimelinePlayer } from "./TimelinePlayer"; // Adjust the import path as needed
@@ -146,10 +146,8 @@ export class SpineController extends Container {
 
         const events:CustomSpineEventData[] = [];
 
-        const eventNameOnTimeline = "EventTimeline";
-
         for (const timeline of anim.timelines) {
-            if (timeline.constructor?.name === eventNameOnTimeline) {
+            if (timeline instanceof EventTimeline) {
                 const eventTimeline: any = timeline;
                 for (let i = 0; i < eventTimeline.events.length; i++) {
                     const event = eventTimeline.events[i];
