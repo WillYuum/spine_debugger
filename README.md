@@ -58,3 +58,10 @@ npx cross-env RSDOCTOR=true npm run build:prod
 This will launch a development server showing the build output process — super helpful for debugging build issues.
 
 ---
+
+## Next Goal:
+
+- [ ] Add changelog to UI + add a framework to always add changelog with version
+- [ ] Display slot names somwhere & add UI.
+- [ ] Add feature to load previous animation
+- [ ] Add feature to clear current animation add new one
