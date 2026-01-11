@@ -4,6 +4,8 @@ import { isPlaying$ } from "../RxStores";
 // import { TimelinePlayer } from "./TimelinePlayer"; // Adjust the import path as needed
 // import { ControlPanelController } from "./ControlPanelController";
 
+
+
 export class SpineController extends Container {
     private _spine: Spine;
     private graphics: Graphics;
@@ -136,6 +138,37 @@ export class SpineController extends Container {
         return this._spine.skeleton.data.animations.map(anim => anim.name);
     }
 
+    public getCurrentAnimationEvents() {
+        const trackEntry = this._spine.state.getCurrent(0);
+        const animationName = trackEntry!.animation!.name;
+        const anim = this._spine.skeleton.data.animations.find(a => a.name === animationName);
+        if (!anim) return [];
+
+        const events:CustomSpineEventData[] = [];
+
+        const eventNameOnTimeline = "EventTimeline";
+
+        for (const timeline of anim.timelines) {
+            if (timeline.constructor?.name === eventNameOnTimeline) {
+                const eventTimeline: any = timeline;
+                for (let i = 0; i < eventTimeline.events.length; i++) {
+                    const event = eventTimeline.events[i];
+                    const eventData = new CustomSpineEventData(
+                        event.data.name,
+                        event.time,
+                        event.intValue,
+                        event.floatValue,
+                        event.stringValue
+                    );
+                    events.push(eventData);
+                }
+            }
+        }
+
+        return events;
+    }
+
+
     public destroy() {
         this._spine.destroy();
         // this.timelinePlayer.dispose();
@@ -213,5 +246,22 @@ export class SpineController extends Container {
 
     getVertCounFromUv(uv: NumberArrayLike) {
         return uv.length / 2;
+    }
+}
+
+
+
+export class CustomSpineEventData {
+    name: string;
+    time: number;
+    intValue: number
+    floatValue: number;
+    stringValue: string;
+    constructor(name: string, time: number, intValue: number, floatValue: number, stringValue: string) {
+        this.name = name;
+        this.time = time;
+        this.intValue = intValue;
+        this.floatValue = floatValue;
+        this.stringValue = stringValue;
     }
 }

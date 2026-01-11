@@ -5,7 +5,7 @@ import { SpineLoader } from "../SpineLoader";
 import { EnableLoadDefaultSpineButton, toggleDisableDefaultButton } from "../LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
 import { VisualComponent } from "../VisualComponent";
-import { animationList$, animationTime$, animationTime$$, drawBoundsOnSpine$, enableLoopOnSpine$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
+import { animationList$, animationTime$, animationTime$$, drawBoundsOnSpine$, enableLoopOnSpine$, eventsList$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
 import { SpineTexture, TextureAtlas } from "@esotericsoftware/spine-pixi-v8";
 
 
@@ -103,11 +103,12 @@ export class MainViewPort extends VisualComponent {
                 const totalDuration = this._spineController.getTotalDurationOfAnimation();
                 const currentDuration = this._spineController.getCurrentDurationOfAnimation();
 
-
                 totalAnimDuration$.next(totalDuration);
                 animationTime$$.next(currentDuration);
-            }
 
+                const eventsData = this._spineController.getCurrentAnimationEvents();
+                eventsList$.next(eventsData);   
+            }
         });
 
 

@@ -1,6 +1,7 @@
 import { VisualComponent } from "../VisualComponent";
-import { animationTime$, animationTime$$, isPlaying$, selectedAnimation$, totalAnimDuration$ } from "../RxStores"; // new reactive stores
-import { Subscription } from "rxjs";
+import { animationTime$, animationTime$$, eventsList$, isPlaying$, selectedAnimation$, totalAnimDuration$ } from "../RxStores"; // new reactive stores
+import { Subscription, take } from "rxjs";
+import { CustomSpineEventData } from "../Spine/SpineController";
 
 export class TimelinePlayer extends VisualComponent {
     private playButton: HTMLButtonElement | null = null;
@@ -9,6 +10,9 @@ export class TimelinePlayer extends VisualComponent {
     private track: HTMLElement | null = null;
     private currentDuration: HTMLElement | null = null;
     private thumb: HTMLElement | null = null;
+
+    private eventsContainer: HTMLElement | null = null;
+
 
     private isDragging = false;
     private duration: number = 10.0;
@@ -24,6 +28,9 @@ export class TimelinePlayer extends VisualComponent {
         this.track = document.getElementById('timeline-track')!;
         this.currentDuration = document.getElementById('timeline-progress')!;
         this.thumb = document.getElementById('timeline-thumb')!;
+
+        this.eventsContainer = document.getElementById('timeline-events');
+
 
         this.initPlayButton();
         this.initTimelineDragging();
@@ -141,10 +148,77 @@ export class TimelinePlayer extends VisualComponent {
     async HandleActiveDisplay(): Promise<void> {
         this.setPlaying(true);
 
+        console.log('Subscribing to totalAnimDuration$ and animationTime$$');
 
         totalAnimDuration$.subscribe(dur => this.setDuration(dur));
         animationTime$$.subscribe(dur => this.setTime(dur));
+
+        this.clearEvents();
+
+        eventsList$.subscribe(events => {
+            this.renderEvents(events);
+        });
     }
     async HandleReplaceSpine(): Promise<void> { this.setPlaying(false); this.setTime(0); }
     async HandleClearSpine(): Promise<void> { this.setPlaying(false); this.setTime(0); }
+
+
+
+    //==========================
+    //========== Helpers =======
+    //==========================
+    private renderEvents(events: CustomSpineEventData[]) {
+        if (!this.eventsContainer) return;
+
+        this.clearEvents();
+        
+        if(events.length === 0) return        
+
+        const epsilon = 0.02;
+        const groups: CustomSpineEventData[][] = [];
+
+        for (const ev of events) {
+            const group = groups.find(g => Math.abs(g[0].time - ev.time) < epsilon);
+            if (group) group.push(ev);
+            else groups.push([ev]);
+        }
+
+        groups.forEach(group => {
+            group.forEach((ev, index) => {
+                const percent =
+                    Math.min(1, Math.max(0, ev.time / this.duration)) * 100;
+
+                // Wrapper (NOT rotated)
+                const wrapper = document.createElement('div');
+                wrapper.className = 'timeline-event-wrapper';
+                wrapper.style.left = `${percent}%`;
+                wrapper.style.top = `${6 + index * 12}px`;
+
+                // Visual marker (rotated)
+                const marker = document.createElement('div');
+                marker.className = 'timeline-event-marker';
+
+                // Tooltip (upright)
+                const tooltip = document.createElement('div');
+                tooltip.className = 'timeline-event-tooltip';
+                tooltip.innerHTML = `
+        <strong>${ev.name}</strong><br/>
+        t = ${ev.time.toFixed(3)}s
+      `;
+      
+                wrapper.appendChild(marker);
+                wrapper.appendChild(tooltip);
+                this.eventsContainer!.appendChild(wrapper);
+            });
+        });
+    }
+
+
+    private clearEvents(){
+        if (!this.eventsContainer) return;
+        this.eventsContainer.innerHTML = '';
+    }
+
+
+
 }

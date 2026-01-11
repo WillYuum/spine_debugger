@@ -1,6 +1,7 @@
 // RxStores.ts
 import { Application } from 'pixi.js';
 import { BehaviorSubject } from 'rxjs';
+import { CustomSpineEventData } from './Spine/SpineController';
 
 
 type SpineMetaData = {
@@ -29,3 +30,5 @@ export const animationTime$$ = new BehaviorSubject<number>(0);
 
 export const drawBoundsOnSpine$ = new BehaviorSubject<boolean>(false);
 export const enableLoopOnSpine$ = new BehaviorSubject<boolean>(false);
+
+export const eventsList$ = new BehaviorSubject<CustomSpineEventData[]>([]);
