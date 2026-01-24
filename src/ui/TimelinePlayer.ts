@@ -1,6 +1,5 @@
-import { VisualComponent } from "../VisualComponent";
-import { animationTime$, animationTime$$, eventsList$, isPlaying$, selectedAnimation$, totalAnimDuration$ } from "../RxStores"; // new reactive stores
-import { Subscription, take } from "rxjs";
+import { VisualComponent } from "../core/VisualComponent";
+import { animationTime$, animationTime$$, eventsList$, isPlaying$, selectedAnimation$, totalAnimDuration$ } from "../state/RxStores"; // new reactive stores
 import { CustomSpineEventData } from "../Spine/SpineController";
 
 export class TimelinePlayer extends VisualComponent {

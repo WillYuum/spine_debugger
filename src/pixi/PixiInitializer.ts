@@ -1,7 +1,7 @@
 import { Application } from "pixi.js";
-import { LifeCycleStateHandlers } from "./LifeCycle";
-import { VisualComponent } from "./VisualComponent";
-import { pixiApp$ } from "./RxStores";
+import { LifeCycleStateHandlers } from "../core/LifeCycle";
+import { VisualComponent } from "../core/VisualComponent";
+import { pixiApp$ } from "../state/RxStores";
 
 
 

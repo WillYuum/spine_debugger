@@ -1,11 +1,11 @@
 import { Application, Assets, Container, Graphics, Point, Rectangle, Ticker } from "pixi.js";
-import { LifeCycleStateHandlers, ToolState } from "../LifeCycle";
-import { EnableDragAndDrop } from "../DragAndDrop";
-import { SpineLoader } from "../SpineLoader";
-import { EnableLoadDefaultSpineButton, toggleDisableDefaultButton } from "../LoadDefaultAsset";
+import {  ToolState } from "../core/LifeCycle";
+import { EnableDragAndDrop } from "./DragAndDrop";
+import { SpineLoader } from "../loaders/SpineLoader";
+import { EnableLoadDefaultSpineButton, toggleDisableDefaultButton } from "../loaders/LoadDefaultAsset";
 import { SpineController } from "../Spine/SpineController";
-import { VisualComponent } from "../VisualComponent";
-import { animationList$, animationTime$, animationTime$$, drawBoundsOnSpine$, enableLoopOnSpine$, eventsList$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../RxStores";
+import { VisualComponent } from "../core/VisualComponent";
+import { animationList$, animationTime$, animationTime$$, drawBoundsOnSpine$, enableLoopOnSpine$, eventsList$, isPlaying$, pixiApp$, selectedAnimation$, spineMetaData$, totalAnimDuration$ } from "../state/RxStores";
 import { SpineTexture, TextureAtlas } from "@esotericsoftware/spine-pixi-v8";
 
 
