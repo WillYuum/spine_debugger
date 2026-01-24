@@ -59,6 +59,36 @@ This will launch a development server showing the build output process — super
 
 ---
 
+## Testing
+
+This project uses **Vitest** for unit testing.
+
+### Run tests
+
+```bash
+# Run tests in watch mode
+npm test
+
+# Run tests once
+npm run test:run
+
+# Run tests with interactive UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Test Coverage
+
+- ✅ State management (StateManager, transitions)
+- ✅ RxJS stores (BehaviorSubjects)
+- ✅ Spine loader utilities
+
+For detailed testing documentation, see [TESTING.md](TESTING.md).
+
+---
+
 ## Next Goal:
 
 - [ ] Add changelog to UI + add a framework to always add changelog with version
