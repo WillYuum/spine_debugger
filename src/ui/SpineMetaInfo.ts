@@ -1,7 +1,5 @@
-import { Subscription } from "rxjs";
-import { ToolState } from "../LifeCycle";
-import { VisualComponent } from "../VisualComponent";
-import { spineMetaData$ } from "../RxStores";
+import { VisualComponent } from "../core/VisualComponent";
+import { spineMetaData$ } from "../state/RxStores";
 
 export class SpineMetaData extends VisualComponent {
 

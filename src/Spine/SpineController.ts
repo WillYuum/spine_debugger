@@ -1,8 +1,6 @@
 import { NumberArrayLike, RegionAttachment, Spine, EventTimeline } from "@esotericsoftware/spine-pixi-v8";
 import { Container, Graphics, Rectangle, Ticker } from "pixi.js";
-import { isPlaying$ } from "../RxStores";
-// import { TimelinePlayer } from "./TimelinePlayer"; // Adjust the import path as needed
-// import { ControlPanelController } from "./ControlPanelController";
+import { isPlaying$ } from "../state/RxStores";
 
 
 

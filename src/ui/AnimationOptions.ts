@@ -1,5 +1,5 @@
-import { VisualComponent } from "../VisualComponent";
-import { drawBoundsOnSpine$, enableLoopOnSpine$ } from "../RxStores";
+import { VisualComponent } from "../core/VisualComponent";
+import { drawBoundsOnSpine$, enableLoopOnSpine$ } from "../state/RxStores";
 
 export class AnimationOptions extends VisualComponent {
     private inputs: Record<string, HTMLInputElement> = {};

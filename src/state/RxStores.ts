@@ -1,7 +1,7 @@
 // RxStores.ts
 import { Application } from 'pixi.js';
 import { BehaviorSubject } from 'rxjs';
-import { CustomSpineEventData } from './Spine/SpineController';
+import { CustomSpineEventData } from '../Spine/SpineController';
 
 
 type SpineMetaData = {

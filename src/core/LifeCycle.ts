@@ -1,9 +1,9 @@
-import { PixiInitializer } from "./PixiInitializer";
-import { TimelinePlayer } from "./visualComponents/TimelinePlayer";
-import { AnimationList } from "./visualComponents/AnimationList";
-import { MainViewPort } from "./visualComponents/MainViewPort";
-import { SpineMetaData } from "./visualComponents/SpineMetaInfo";
-import { AnimationOptions } from "./visualComponents/AnimationOptions";
+import { PixiInitializer } from "../pixi/PixiInitializer";
+import { TimelinePlayer } from "../ui/TimelinePlayer";
+import { AnimationList } from "../ui/AnimationList";
+import { MainViewPort } from "../ui/MainViewPort";
+import { SpineMetaData } from "../ui/SpineMetaInfo";
+import { AnimationOptions } from "../ui/AnimationOptions";
 
 // 1. Interface for visual component logic
 export interface LifeCycleStateHandlers {

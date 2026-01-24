@@ -1,6 +1,5 @@
-import { LifeCycleStateHandlers } from "../LifeCycle";
-import { animationList$, selectedAnimation$ } from "../RxStores";
-import { VisualComponent } from "../VisualComponent";
+import { animationList$, selectedAnimation$ } from "../state/RxStores";
+import { VisualComponent } from "../core/VisualComponent";
 
 
 
