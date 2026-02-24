@@ -5,19 +5,6 @@ import { VisualComponent } from "../core/VisualComponent";
 
 export class AnimationList extends VisualComponent {
 
-
-
-    private populateAnimationsList(animNames: string[]) {
-        const list = document.getElementById('animations-list')!;
-        list.innerHTML = ""; // clear previous items
-        animNames.forEach(animName => {
-            const li = document.createElement('li');
-            li.textContent = animName;
-            li.addEventListener('click', () => selectedAnimation$.next(animName));
-            list.appendChild(li);
-        });
-    }
-
     async HandleInitUI() {
 
         // Populate list
@@ -34,7 +21,7 @@ export class AnimationList extends VisualComponent {
             })
         );
     }
-    
+
     async HandleEmptyDisplay(): Promise<void> {
 
     }
@@ -71,6 +58,17 @@ export class AnimationList extends VisualComponent {
             } else {
                 li.classList.remove('selected');
             }
+        });
+    }
+
+    private populateAnimationsList(animNames: string[]) {
+        const list = document.getElementById('animations-list')!;
+        list.innerHTML = ""; // clear previous items
+        animNames.forEach(animName => {
+            const li = document.createElement('li');
+            li.textContent = animName;
+            li.addEventListener('click', () => selectedAnimation$.next(animName));
+            list.appendChild(li);
         });
     }
 }
