@@ -19,13 +19,22 @@ export class AnimationList extends VisualComponent {
     }
 
     async HandleInitUI() {
+
+        // Populate list
         this.trackDataSub(
             animationList$.subscribe(anims => {
                 this.populateAnimationsList(anims)
             })
         );
-    }
 
+        // Highlight selection
+        this.trackDataSub(
+            selectedAnimation$.subscribe(animName => {
+                this.highlightSelected(animName);
+            })
+        );
+    }
+    
     async HandleEmptyDisplay(): Promise<void> {
 
     }
@@ -49,5 +58,19 @@ export class AnimationList extends VisualComponent {
 
     async HandleClearSpine(): Promise<void> {
 
+    }
+
+
+    private highlightSelected(animName: string | null) {
+        const list = document.getElementById('animations-list')!;
+        const items = list.querySelectorAll('li');
+
+        items.forEach(li => {
+            if (li.textContent === animName) {
+                li.classList.add('selected');
+            } else {
+                li.classList.remove('selected');
+            }
+        });
     }
 }

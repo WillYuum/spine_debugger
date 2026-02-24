@@ -209,3 +209,10 @@ html, body {
     width: 100%;
   }
 }
+
+
+#animations-list li.selected {
+    background: #2b7fff;
+    color: white;
+    font-weight: bold;
+}
